@@ -1,6 +1,7 @@
 use core::fmt;
-use std::{borrow::Cow, fmt::Write};
+use std::{borrow::Cow, cmp::Ordering, fmt::Write};
 
+use into_owned_trait::IntoOwned;
 use iref::{Iri, IriBuf};
 use langtag::{LangTag, LangTagBuf};
 
@@ -150,6 +151,77 @@ impl<'a> PartialEq<&'a Iri> for CowLiteralType<'_> {
             Self::Any(ty) => ty.as_ref() == other,
             Self::LangString(_) => RDF_LANG_STRING == other,
         }
+    }
+}
+
+impl IntoOwned for CowLiteralType<'_> {
+    type Owned = LiteralType;
+
+    fn into_owned(self) -> LiteralType {
+        match self {
+            Self::Any(iri) => LiteralType::Any(iri.into_owned()),
+            Self::LangString(lang) => LiteralType::LangString(lang.into_owned()),
+        }
+    }
+}
+
+impl equivalent::Equivalent<LiteralType> for CowLiteralType<'_> {
+    fn equivalent(&self, key: &LiteralType) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<LiteralType> for CowLiteralType<'_> {
+    fn compare(&self, key: &LiteralType) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
+    }
+}
+
+impl PartialEq<LiteralType> for CowLiteralType<'_> {
+    fn eq(&self, other: &LiteralType) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
+impl PartialEq<CowLiteralType<'_>> for LiteralType {
+    fn eq(&self, other: &CowLiteralType<'_>) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
+impl<'a> PartialEq<LiteralTypeRef<'a>> for CowLiteralType<'_> {
+    fn eq(&self, other: &LiteralTypeRef<'a>) -> bool {
+        self.as_ref() == *other
+    }
+}
+
+impl PartialEq<CowLiteralType<'_>> for LiteralTypeRef<'_> {
+    fn eq(&self, other: &CowLiteralType<'_>) -> bool {
+        *self == other.as_ref()
+    }
+}
+
+impl PartialOrd<LiteralType> for CowLiteralType<'_> {
+    fn partial_cmp(&self, other: &LiteralType) -> Option<Ordering> {
+        self.as_ref().partial_cmp(&other.as_ref())
+    }
+}
+
+impl PartialOrd<CowLiteralType<'_>> for LiteralType {
+    fn partial_cmp(&self, other: &CowLiteralType<'_>) -> Option<Ordering> {
+        self.as_ref().partial_cmp(&other.as_ref())
+    }
+}
+
+impl<'a> PartialOrd<LiteralTypeRef<'a>> for CowLiteralType<'_> {
+    fn partial_cmp(&self, other: &LiteralTypeRef<'a>) -> Option<Ordering> {
+        self.as_ref().partial_cmp(other)
+    }
+}
+
+impl PartialOrd<CowLiteralType<'_>> for LiteralTypeRef<'_> {
+    fn partial_cmp(&self, other: &CowLiteralType<'_>) -> Option<Ordering> {
+        self.partial_cmp(&other.as_ref())
     }
 }
 

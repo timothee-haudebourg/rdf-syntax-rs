@@ -64,6 +64,22 @@ impl<'a> LiteralTypeRef<'a> {
             Self::LangString(t) => super::CowLiteralType::LangString(std::borrow::Cow::Borrowed(t)),
         }
     }
+
+    pub fn to_owned(self) -> LiteralType {
+        IntoOwned::into_owned(self)
+    }
+}
+
+impl equivalent::Equivalent<LiteralType> for LiteralTypeRef<'_> {
+    fn equivalent(&self, key: &LiteralType) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<LiteralType> for LiteralTypeRef<'_> {
+    fn compare(&self, key: &LiteralType) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
+    }
 }
 
 impl IntoOwned for LiteralTypeRef<'_> {
