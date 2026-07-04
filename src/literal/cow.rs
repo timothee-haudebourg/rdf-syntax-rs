@@ -1,14 +1,15 @@
 use core::fmt;
-use std::borrow::{Borrow, Cow};
+use std::borrow::Cow;
 use std::cmp::Ordering;
 
+use into_owned_trait::IntoOwned;
 use langtag::LangTag;
 
 use crate::RdfDisplay;
 
 use super::{CowLiteralType, Literal, LiteralRef};
 
-/// RDF Literal reference.
+/// Copy-on-write RDF literal.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 pub struct CowLiteral<'a> {
@@ -25,26 +26,6 @@ impl<'a> CowLiteral<'a> {
             value: value.into(),
             r#type: type_.into(),
         }
-    }
-
-    pub fn as_type(&self) -> &CowLiteralType<'a> {
-        &self.r#type
-    }
-
-    pub fn as_value(&self) -> &str {
-        &self.value
-    }
-
-    pub fn into_parts(self) -> (Cow<'a, str>, CowLiteralType<'a>) {
-        (self.value, self.r#type)
-    }
-
-    pub fn into_type(self) -> CowLiteralType<'a> {
-        self.r#type
-    }
-
-    pub fn into_value(self) -> Cow<'a, str> {
-        self.value
     }
 
     pub fn as_str(&self) -> &str {
@@ -68,6 +49,14 @@ impl<'a> CowLiteral<'a> {
     }
 
     pub fn into_owned(self) -> Literal {
+        Literal::new(self.value, self.r#type)
+    }
+}
+
+impl IntoOwned for CowLiteral<'_> {
+    type Owned = Literal;
+
+    fn into_owned(self) -> Literal {
         Literal::new(self.value, self.r#type)
     }
 }
@@ -150,15 +139,21 @@ impl equivalent::Equivalent<Literal> for CowLiteral<'_> {
     }
 }
 
-impl Borrow<str> for CowLiteral<'_> {
-    fn borrow(&self) -> &str {
-        self.as_str()
+impl equivalent::Comparable<Literal> for CowLiteral<'_> {
+    fn compare(&self, key: &Literal) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
     }
 }
 
 impl AsRef<str> for CowLiteral<'_> {
     fn as_ref(&self) -> &str {
         self.as_str()
+    }
+}
+
+impl AsRef<[u8]> for CowLiteral<'_> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }
 

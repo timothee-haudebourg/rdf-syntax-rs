@@ -1,6 +1,5 @@
 use crate::RdfDisplay;
 use langtag::LangTag;
-use std::borrow::Borrow;
 use std::fmt;
 
 mod cow;
@@ -30,40 +29,12 @@ impl Literal {
         }
     }
 
-    pub fn as_type(&self) -> &LiteralType {
-        &self.r#type
-    }
-
-    pub fn as_type_mut(&mut self) -> &mut LiteralType {
-        &mut self.r#type
-    }
-
-    pub fn into_type(self) -> LiteralType {
-        self.r#type
-    }
-
-    pub fn as_value(&self) -> &String {
+    pub fn as_str(&self) -> &str {
         &self.value
     }
 
-    pub fn as_value_mut(&mut self) -> &mut String {
-        &mut self.value
-    }
-
-    pub fn into_value(self) -> String {
-        self.value
-    }
-
-    pub fn into_parts(self) -> (String, LiteralType) {
-        (self.value, self.r#type)
-    }
-
-    pub fn as_str(&self) -> &str {
-        self.value.as_ref()
-    }
-
     pub fn as_bytes(&self) -> &[u8] {
-        self.value.as_ref()
+        self.value.as_bytes()
     }
 
     pub fn is_lang_string(&self) -> bool {
@@ -87,15 +58,15 @@ impl Literal {
     }
 }
 
-impl Borrow<str> for Literal {
-    fn borrow(&self) -> &str {
+impl AsRef<str> for Literal {
+    fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl AsRef<str> for Literal {
-    fn as_ref(&self) -> &str {
-        self.as_str()
+impl AsRef<[u8]> for Literal {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }
 

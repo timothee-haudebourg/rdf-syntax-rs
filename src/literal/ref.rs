@@ -1,5 +1,5 @@
 use core::fmt;
-use std::{borrow::Borrow, cmp::Ordering};
+use std::cmp::Ordering;
 
 use into_owned_trait::IntoOwned;
 use langtag::LangTag;
@@ -27,36 +27,12 @@ impl<'a> LiteralRef<'a> {
         }
     }
 
-    pub fn as_type(&self) -> LiteralTypeRef<'a> {
-        self.r#type
-    }
-
-    pub fn as_type_mut(&mut self) -> &mut LiteralTypeRef<'a> {
-        &mut self.r#type
-    }
-
-    pub fn into_type(self) -> LiteralTypeRef<'a> {
-        self.r#type
-    }
-
-    pub fn as_value(&self) -> &'a str {
-        self.value
-    }
-
-    pub fn into_value(self) -> &'a str {
-        self.value
-    }
-
-    pub fn into_parts(self) -> (&'a str, LiteralTypeRef<'a>) {
-        (self.value, self.r#type)
-    }
-
     pub fn as_str(&self) -> &'a str {
         self.value
     }
 
     pub fn as_bytes(&self) -> &'a [u8] {
-        self.value.as_ref()
+        self.value.as_bytes()
     }
 
     pub fn is_lang_string(&self) -> bool {
@@ -73,12 +49,8 @@ impl<'a> LiteralRef<'a> {
 }
 
 impl LiteralRef<'_> {
-    pub fn to_owned(self) -> Literal {
-        Literal::new(self.value.to_owned(), self.r#type.into_owned())
-    }
-
-    pub fn cloned(self) -> Literal {
-        self.to_owned()
+    pub fn to_owned(&self) -> Literal {
+        (*self).into_owned()
     }
 }
 
@@ -114,6 +86,12 @@ impl equivalent::Equivalent<Literal> for LiteralRef<'_> {
     }
 }
 
+impl equivalent::Comparable<Literal> for LiteralRef<'_> {
+    fn compare(&self, key: &Literal) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
+    }
+}
+
 impl<'a> PartialOrd<LiteralRef<'a>> for Literal {
     fn partial_cmp(&self, other: &LiteralRef<'a>) -> Option<Ordering> {
         Some(
@@ -135,15 +113,15 @@ impl PartialOrd<Literal> for LiteralRef<'_> {
     }
 }
 
-impl Borrow<str> for LiteralRef<'_> {
-    fn borrow(&self) -> &str {
+impl AsRef<str> for LiteralRef<'_> {
+    fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl AsRef<str> for LiteralRef<'_> {
-    fn as_ref(&self) -> &str {
-        self.as_str()
+impl AsRef<[u8]> for LiteralRef<'_> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }
 
