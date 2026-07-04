@@ -71,10 +71,10 @@ pub trait GroundInterpretationMut: GroundInterpretation {
 
 /// Reverse interpretation.
 pub trait ReverseGroundInterpretation: GroundInterpretation {
-    type Iris<'a>: Iterator<Item = Cow<'a, Iri>>
+    type Iris<'a>: Iterator<Item = &'a Iri>
     where
         Self: 'a;
-    type Literals<'a>: Iterator<Item = CowLiteral<'a>>
+    type Literals<'a>: Iterator<Item = LiteralRef<'a>>
     where
         Self: 'a;
 
@@ -100,13 +100,13 @@ pub struct GroundTermsOf<'a, I: 'a + ?Sized + ReverseGroundInterpretation> {
 }
 
 impl<'a, I: 'a + ?Sized + ReverseGroundInterpretation> Iterator for GroundTermsOf<'a, I> {
-    type Item = CowGroundTerm<'a>;
+    type Item = GroundTermRef<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.iris
             .next()
-            .map(CowGroundTerm::Iri)
-            .or_else(|| self.literals.next().map(CowGroundTerm::Literal))
+            .map(GroundTermRef::Iri)
+            .or_else(|| self.literals.next().map(GroundTermRef::Literal))
     }
 }
 
@@ -147,7 +147,7 @@ pub trait InterpretationMut: Interpretation + GroundInterpretationMut {
 }
 
 pub trait ReverseInterpretation: ReverseGroundInterpretation {
-    type BlankIds<'a>: Iterator<Item = Cow<'a, BlankId>>
+    type BlankIds<'a>: Iterator<Item = &'a BlankId>
     where
         Self: 'a;
 
@@ -167,12 +167,12 @@ pub struct TermsOf<'a, I: 'a + ?Sized + ReverseInterpretation> {
 }
 
 impl<'a, I: 'a + ?Sized + ReverseInterpretation> Iterator for TermsOf<'a, I> {
-    type Item = CowTerm<'a>;
+    type Item = TermRef<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.terms
             .next()
-            .map(CowTerm::Ground)
-            .or_else(|| self.blank_ids.next().map(CowTerm::BlankId))
+            .map(TermRef::Ground)
+            .or_else(|| self.blank_ids.next().map(TermRef::BlankId))
     }
 }

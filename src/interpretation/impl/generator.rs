@@ -63,31 +63,31 @@ impl<G> InterpretationMut for GeneratorInterpretation<G> {
 
 impl<G> ReverseGroundInterpretation for GeneratorInterpretation<G> {
     type Iris<'a>
-        = std::option::IntoIter<Cow<'a, Iri>>
+        = std::option::IntoIter<&'a Iri>
     where
         Self: 'a;
     type Literals<'a>
-        = std::option::IntoIter<CowLiteral<'a>>
+        = std::option::IntoIter<LiteralRef<'a>>
     where
         Self: 'a;
 
     fn iris_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::Iris<'a> {
-        resource.as_iri().map(Cow::Borrowed).into_iter()
+        resource.as_iri().into_iter()
     }
 
     fn literals_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::Literals<'a> {
-        resource.as_literal().map(LiteralRef::into_cow).into_iter()
+        resource.as_literal().into_iter()
     }
 }
 
 impl<G> ReverseInterpretation for GeneratorInterpretation<G> {
     type BlankIds<'a>
-        = std::option::IntoIter<Cow<'a, BlankId>>
+        = std::option::IntoIter<&'a BlankId>
     where
         Self: 'a;
 
     fn blank_ids_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::BlankIds<'a> {
-        resource.as_blank_id().map(Cow::Borrowed).into_iter()
+        resource.as_blank_id().into_iter()
     }
 }
 

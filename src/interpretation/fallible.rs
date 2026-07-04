@@ -1,18 +1,19 @@
 use core::fmt;
 use std::{borrow::Cow, convert::Infallible};
 
-use iref::Iri;
+use into_owned_trait::MapIntoOwned;
+use iref::{Iri, IriBuf};
 use rdf_types::Domain;
 
 use super::{GenerativeInterpretation, GroundInterpretation};
 use crate::{
-    BlankId, CowGroundTerm, CowId, CowLiteral, CowTerm, GroundInterpretationMut, GroundTermRef,
-    IdRef, LiteralRef, TermRef,
+    BlankId, BlankIdBuf, CowGroundTerm, CowId, CowLiteral, CowTerm, GroundInterpretationMut,
+    GroundTerm, GroundTermRef, IdRef, Literal, LiteralRef, Term, TermRef,
     interpretation::{
         Interpretation, InterpretationMut, ReverseGroundInterpretation, ReverseInterpretation,
         TraversableInterpretation,
     },
-    utils::InfallibleIterator,
+    util::InfallibleIterator,
 };
 
 /// Fallible ground interpretation.
@@ -154,10 +155,10 @@ impl<I: GroundInterpretationMut> FallibleGroundInterpretationMut for I {
 
 /// Fallible reverse ground interpretation.
 pub trait FallibleReverseGroundInterpretation: FallibleGroundInterpretation {
-    type TryIris<'a>: Iterator<Item = Result<Cow<'a, Iri>, Self::Error>>
+    type TryIris<'a>: Iterator<Item = Result<IriBuf, Self::Error>>
     where
         Self: 'a;
-    type TryLiterals<'a>: Iterator<Item = Result<CowLiteral<'a>, Self::Error>>
+    type TryLiterals<'a>: Iterator<Item = Result<Literal, Self::Error>>
     where
         Self: 'a;
 
@@ -186,21 +187,21 @@ pub trait FallibleReverseGroundInterpretation: FallibleGroundInterpretation {
 
 impl<I: ReverseGroundInterpretation> FallibleReverseGroundInterpretation for I {
     type TryIris<'a>
-        = InfallibleIterator<I::Iris<'a>>
+        = InfallibleIterator<MapIntoOwned<I::Iris<'a>>>
     where
         Self: 'a;
 
     type TryLiterals<'a>
-        = InfallibleIterator<I::Literals<'a>>
+        = InfallibleIterator<MapIntoOwned<I::Literals<'a>>>
     where
         Self: 'a;
 
     fn try_iris_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::TryIris<'a> {
-        InfallibleIterator(self.iris_of(resource))
+        InfallibleIterator(MapIntoOwned(self.iris_of(resource)))
     }
 
     fn try_literals_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::TryLiterals<'a> {
-        InfallibleIterator(self.literals_of(resource))
+        InfallibleIterator(MapIntoOwned(self.literals_of(resource)))
     }
 
     fn try_is_anonymous(&self, resource: &Self::Resource) -> Result<bool, Self::Error> {
@@ -216,13 +217,13 @@ pub struct TryGroundTermsOf<'a, I: 'a + ?Sized + FallibleReverseGroundInterpreta
 impl<'a, I: 'a + ?Sized + FallibleReverseGroundInterpretation> Iterator
     for TryGroundTermsOf<'a, I>
 {
-    type Item = Result<CowGroundTerm<'a>, I::Error>;
+    type Item = Result<GroundTerm, I::Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.iris
             .next()
-            .map(|r| r.map(CowGroundTerm::Iri))
-            .or_else(|| self.literals.next().map(|r| r.map(CowGroundTerm::Literal)))
+            .map(|r| r.map(GroundTerm::Iri))
+            .or_else(|| self.literals.next().map(|r| r.map(GroundTerm::Literal)))
     }
 }
 
@@ -327,7 +328,7 @@ impl<I: InterpretationMut> FallibleInterpretationMut for I {
 
 /// Fallible reverse interpretation.
 pub trait FallibleReverseInterpretation: FallibleReverseGroundInterpretation {
-    type TryBlankIds<'a>: Iterator<Item = Result<Cow<'a, BlankId>, Self::Error>>
+    type TryBlankIds<'a>: Iterator<Item = Result<BlankIdBuf, Self::Error>>
     where
         Self: 'a;
 
@@ -345,12 +346,12 @@ pub trait FallibleReverseInterpretation: FallibleReverseGroundInterpretation {
 /// [`Infallible`] error type.
 impl<I: ReverseInterpretation> FallibleReverseInterpretation for I {
     type TryBlankIds<'a>
-        = InfallibleIterator<I::BlankIds<'a>>
+        = InfallibleIterator<MapIntoOwned<I::BlankIds<'a>>>
     where
         Self: 'a;
 
     fn try_blank_ids_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::TryBlankIds<'a> {
-        InfallibleIterator(self.blank_ids_of(resource))
+        InfallibleIterator(MapIntoOwned(self.blank_ids_of(resource)))
     }
 }
 
@@ -360,12 +361,12 @@ pub struct TryTermsOf<'a, I: 'a + ?Sized + FallibleReverseInterpretation> {
 }
 
 impl<'a, I: 'a + ?Sized + FallibleReverseInterpretation> Iterator for TryTermsOf<'a, I> {
-    type Item = Result<CowTerm<'a>, I::Error>;
+    type Item = Result<Term, I::Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.terms
             .next()
-            .map(|r| r.map(CowTerm::Ground))
-            .or_else(|| self.blank_ids.next().map(|r| r.map(CowTerm::BlankId)))
+            .map(|r| r.map(Term::Ground))
+            .or_else(|| self.blank_ids.next().map(|r| r.map(Term::BlankId)))
     }
 }

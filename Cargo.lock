@@ -264,6 +264,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "into-owned-trait"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f146927a76c9094aab5ec0f60d96cf1145d0dd50f73f499e896747d7faf0a8b"
+
+[[package]]
 name = "iref"
 version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -402,6 +408,7 @@ name = "rdf-syntax"
 version = "0.1.0"
 dependencies = [
  "equivalent",
+ "into-owned-trait",
  "iref",
  "langtag",
  "rdf-types",
@@ -417,6 +424,7 @@ dependencies = [
  "educe",
  "futures-lite",
  "indexmap",
+ "into-owned-trait",
  "raw-btree",
  "replace_with",
  "slab",

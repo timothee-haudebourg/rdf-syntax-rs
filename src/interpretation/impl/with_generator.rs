@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use iref::Iri;
-use rdf_types::{Domain, domain::sealed::SealedDomain};
+use rdf_types::{Domain, domain::r#static::StaticDomain};
 
 use crate::{
     BlankId, CowLiteral, Generator, GroundInterpretation, GroundInterpretationMut, LiteralRef,
@@ -25,7 +25,7 @@ use crate::{
 ///
 /// [`GeneratorInterpretation`]: super::GeneratorInterpretation
 /// [`ConstGenerativeInterpretation`]: crate::interpretation::ConstGenerativeInterpretation
-pub struct WithIriGenerator<G, I = SealedDomain<Term>> {
+pub struct WithIriGenerator<G, I = StaticDomain<Term>> {
     interpretation: I,
     generator: G,
 }
@@ -117,7 +117,7 @@ impl<I: InterpretationMut, G: Generator> GenerativeInterpretation for WithIriGen
     }
 }
 
-pub struct WithGenerator<G, I = SealedDomain<Term>> {
+pub struct WithGenerator<G, I = StaticDomain<Term>> {
     interpretation: I,
     generator: G,
 }
