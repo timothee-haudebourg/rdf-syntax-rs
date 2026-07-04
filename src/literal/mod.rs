@@ -3,13 +3,12 @@ use langtag::LangTag;
 use std::borrow::Borrow;
 use std::fmt;
 
-mod r#ref;
-pub use r#ref::*;
-
 mod cow;
-pub use cow::*;
-
+mod r#ref;
 mod r#type;
+
+pub use cow::*;
+pub use r#ref::*;
 pub use r#type::*;
 
 /// RDF Literal.
@@ -20,27 +19,27 @@ pub struct Literal {
     pub value: String,
 
     /// Literal type.
-    pub type_: LiteralType,
+    pub r#type: LiteralType,
 }
 
 impl Literal {
     pub fn new(value: impl Into<String>, type_: impl Into<LiteralType>) -> Self {
         Self {
             value: value.into(),
-            type_: type_.into(),
+            r#type: type_.into(),
         }
     }
 
     pub fn as_type(&self) -> &LiteralType {
-        &self.type_
+        &self.r#type
     }
 
     pub fn as_type_mut(&mut self) -> &mut LiteralType {
-        &mut self.type_
+        &mut self.r#type
     }
 
     pub fn into_type(self) -> LiteralType {
-        self.type_
+        self.r#type
     }
 
     pub fn as_value(&self) -> &String {
@@ -56,7 +55,7 @@ impl Literal {
     }
 
     pub fn into_parts(self) -> (String, LiteralType) {
-        (self.value, self.type_)
+        (self.value, self.r#type)
     }
 
     pub fn as_str(&self) -> &str {
@@ -68,23 +67,23 @@ impl Literal {
     }
 
     pub fn is_lang_string(&self) -> bool {
-        self.type_.is_lang_string()
+        self.r#type.is_lang_string()
     }
 
     pub fn lang_tag(&self) -> Option<&LangTag> {
-        self.type_.lang_tag()
+        self.r#type.lang_tag()
     }
 
     pub fn as_ref(&self) -> LiteralRef<'_> {
-        LiteralRef::new(&self.value, self.type_.as_ref())
+        LiteralRef::new(&self.value, self.r#type.as_ref())
     }
 
     pub fn as_cow(&self) -> CowLiteral<'_> {
-        CowLiteral::new(&self.value, self.type_.as_cow())
+        CowLiteral::new(&self.value, self.r#type.as_cow())
     }
 
     pub fn into_cow(self) -> CowLiteral<'static> {
-        CowLiteral::new(self.value, self.type_.into_cow())
+        CowLiteral::new(self.value, self.r#type.into_cow())
     }
 }
 
@@ -103,10 +102,10 @@ impl AsRef<str> for Literal {
 impl fmt::Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.rdf_fmt(f)?;
-        if self.type_.is_xsd_string() {
+        if self.r#type.is_xsd_string() {
             Ok(())
         } else {
-            self.type_.rdf_fmt(f)
+            self.r#type.rdf_fmt(f)
         }
     }
 }
@@ -114,10 +113,10 @@ impl fmt::Display for Literal {
 impl RdfDisplay for Literal {
     fn rdf_fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.rdf_fmt(f)?;
-        if self.type_.is_xsd_string() {
+        if self.r#type.is_xsd_string() {
             Ok(())
         } else {
-            self.type_.rdf_fmt(f)
+            self.r#type.rdf_fmt(f)
         }
     }
 }

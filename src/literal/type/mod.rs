@@ -5,11 +5,11 @@ use std::{borrow::Cow, fmt::Write};
 
 use crate::{RdfDisplay, XSD_STRING};
 
-mod r#ref;
-pub use r#ref::*;
-
 mod cow;
+mod r#ref;
+
 pub use cow::*;
+pub use r#ref::*;
 
 /// RDF literal type.
 #[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord, Debug)]

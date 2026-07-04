@@ -1,6 +1,7 @@
 use core::fmt;
 use std::{borrow::Borrow, cmp::Ordering};
 
+use into_owned_trait::IntoOwned;
 use langtag::LangTag;
 
 use crate::RdfDisplay;
@@ -15,27 +16,27 @@ pub struct LiteralRef<'a> {
     pub value: &'a str,
 
     /// Literal type.
-    pub type_: LiteralTypeRef<'a>,
+    pub r#type: LiteralTypeRef<'a>,
 }
 
 impl<'a> LiteralRef<'a> {
     pub fn new(value: &'a str, type_: impl Into<LiteralTypeRef<'a>>) -> Self {
         Self {
             value,
-            type_: type_.into(),
+            r#type: type_.into(),
         }
     }
 
     pub fn as_type(&self) -> LiteralTypeRef<'a> {
-        self.type_
+        self.r#type
     }
 
     pub fn as_type_mut(&mut self) -> &mut LiteralTypeRef<'a> {
-        &mut self.type_
+        &mut self.r#type
     }
 
     pub fn into_type(self) -> LiteralTypeRef<'a> {
-        self.type_
+        self.r#type
     }
 
     pub fn as_value(&self) -> &'a str {
@@ -47,7 +48,7 @@ impl<'a> LiteralRef<'a> {
     }
 
     pub fn into_parts(self) -> (&'a str, LiteralTypeRef<'a>) {
-        (self.value, self.type_)
+        (self.value, self.r#type)
     }
 
     pub fn as_str(&self) -> &'a str {
@@ -59,25 +60,33 @@ impl<'a> LiteralRef<'a> {
     }
 
     pub fn is_lang_string(&self) -> bool {
-        self.type_.is_lang_string()
+        self.r#type.is_lang_string()
     }
 
     pub fn lang_tag(&self) -> Option<&'a LangTag> {
-        self.type_.lang_tag()
+        self.r#type.lang_tag()
     }
 
     pub fn into_cow(self) -> CowLiteral<'a> {
-        CowLiteral::new(self.value, self.type_)
+        CowLiteral::new(self.value, self.r#type)
     }
 }
 
 impl LiteralRef<'_> {
     pub fn to_owned(self) -> Literal {
-        Literal::new(self.value.to_owned(), self.type_.into_owned())
+        Literal::new(self.value.to_owned(), self.r#type.into_owned())
     }
 
     pub fn cloned(self) -> Literal {
         self.to_owned()
+    }
+}
+
+impl<'a> IntoOwned for LiteralRef<'a> {
+    type Owned = Literal;
+
+    fn into_owned(self) -> Self::Owned {
+        Literal::new(self.value, self.r#type.into_owned())
     }
 }
 
@@ -89,13 +98,13 @@ impl From<LiteralRef<'_>> for Literal {
 
 impl<'a> PartialEq<LiteralRef<'a>> for Literal {
     fn eq(&self, other: &LiteralRef<'a>) -> bool {
-        self.type_ == other.type_ && self.value == other.value
+        self.r#type == other.r#type && self.value == other.value
     }
 }
 
 impl PartialEq<Literal> for LiteralRef<'_> {
     fn eq(&self, other: &Literal) -> bool {
-        self.type_ == other.type_ && self.value == other.value
+        self.r#type == other.r#type && self.value == other.value
     }
 }
 
@@ -111,7 +120,7 @@ impl<'a> PartialOrd<LiteralRef<'a>> for Literal {
             self.value
                 .as_str()
                 .partial_cmp(other.value)?
-                .then(self.type_.partial_cmp(&other.type_)?),
+                .then(self.r#type.partial_cmp(&other.r#type)?),
         )
     }
 }
@@ -121,7 +130,7 @@ impl PartialOrd<Literal> for LiteralRef<'_> {
         Some(
             self.value
                 .partial_cmp(other.value.as_str())?
-                .then(self.type_.partial_cmp(&other.type_)?),
+                .then(self.r#type.partial_cmp(&other.r#type)?),
         )
     }
 }
@@ -141,10 +150,10 @@ impl AsRef<str> for LiteralRef<'_> {
 impl fmt::Display for LiteralRef<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.rdf_fmt(f)?;
-        if self.type_.is_xsd_string() {
+        if self.r#type.is_xsd_string() {
             Ok(())
         } else {
-            self.type_.rdf_fmt(f)
+            self.r#type.rdf_fmt(f)
         }
     }
 }
@@ -152,10 +161,10 @@ impl fmt::Display for LiteralRef<'_> {
 impl RdfDisplay for LiteralRef<'_> {
     fn rdf_fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.rdf_fmt(f)?;
-        if self.type_.is_xsd_string() {
+        if self.r#type.is_xsd_string() {
             Ok(())
         } else {
-            self.type_.rdf_fmt(f)
+            self.r#type.rdf_fmt(f)
         }
     }
 }

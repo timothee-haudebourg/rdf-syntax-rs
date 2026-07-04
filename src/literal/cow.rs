@@ -16,19 +16,19 @@ pub struct CowLiteral<'a> {
     pub value: Cow<'a, str>,
 
     /// Literal type.
-    pub type_: CowLiteralType<'a>,
+    pub r#type: CowLiteralType<'a>,
 }
 
 impl<'a> CowLiteral<'a> {
     pub fn new(value: impl Into<Cow<'a, str>>, type_: impl Into<CowLiteralType<'a>>) -> Self {
         Self {
             value: value.into(),
-            type_: type_.into(),
+            r#type: type_.into(),
         }
     }
 
     pub fn as_type(&self) -> &CowLiteralType<'a> {
-        &self.type_
+        &self.r#type
     }
 
     pub fn as_value(&self) -> &str {
@@ -36,11 +36,11 @@ impl<'a> CowLiteral<'a> {
     }
 
     pub fn into_parts(self) -> (Cow<'a, str>, CowLiteralType<'a>) {
-        (self.value, self.type_)
+        (self.value, self.r#type)
     }
 
     pub fn into_type(self) -> CowLiteralType<'a> {
-        self.type_
+        self.r#type
     }
 
     pub fn into_value(self) -> Cow<'a, str> {
@@ -56,31 +56,31 @@ impl<'a> CowLiteral<'a> {
     }
 
     pub fn is_lang_string(&self) -> bool {
-        self.type_.is_lang_string()
+        self.r#type.is_lang_string()
     }
 
     pub fn lang_tag(&self) -> Option<&LangTag> {
-        self.type_.lang_tag()
+        self.r#type.lang_tag()
     }
 
     pub fn as_ref(&self) -> LiteralRef<'_> {
-        LiteralRef::new(&self.value, self.type_.as_ref())
+        LiteralRef::new(&self.value, self.r#type.as_ref())
     }
 
     pub fn into_owned(self) -> Literal {
-        Literal::new(self.value, self.type_)
+        Literal::new(self.value, self.r#type)
     }
 }
 
 impl<'a> From<&'a Literal> for CowLiteral<'a> {
     fn from(value: &'a Literal) -> Self {
-        Self::new(&value.value, value.type_.as_ref())
+        Self::new(&value.value, value.r#type.as_ref())
     }
 }
 
 impl<'a> From<LiteralRef<'a>> for CowLiteral<'a> {
     fn from(value: LiteralRef<'a>) -> Self {
-        Self::new(value.value, value.type_)
+        Self::new(value.value, value.r#type)
     }
 }
 
@@ -165,10 +165,10 @@ impl AsRef<str> for CowLiteral<'_> {
 impl fmt::Display for CowLiteral<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.rdf_fmt(f)?;
-        if self.type_.is_xsd_string() {
+        if self.r#type.is_xsd_string() {
             Ok(())
         } else {
-            self.type_.rdf_fmt(f)
+            self.r#type.rdf_fmt(f)
         }
     }
 }
@@ -176,10 +176,10 @@ impl fmt::Display for CowLiteral<'_> {
 impl RdfDisplay for CowLiteral<'_> {
     fn rdf_fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.rdf_fmt(f)?;
-        if self.type_.is_xsd_string() {
+        if self.r#type.is_xsd_string() {
             Ok(())
         } else {
-            self.type_.rdf_fmt(f)
+            self.r#type.rdf_fmt(f)
         }
     }
 }

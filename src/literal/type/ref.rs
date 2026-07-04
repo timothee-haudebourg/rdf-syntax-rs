@@ -1,6 +1,7 @@
 use core::fmt;
 use std::{cmp::Ordering, fmt::Write};
 
+use into_owned_trait::IntoOwned;
 use iref::Iri;
 use langtag::LangTag;
 
@@ -65,8 +66,10 @@ impl<'a> LiteralTypeRef<'a> {
     }
 }
 
-impl LiteralTypeRef<'_> {
-    pub fn into_owned(self) -> LiteralType {
+impl IntoOwned for LiteralTypeRef<'_> {
+    type Owned = LiteralType;
+
+    fn into_owned(self) -> LiteralType {
         match self {
             Self::Any(i) => LiteralType::Any(i.to_owned()),
             Self::LangString(l) => LiteralType::LangString(l.to_owned()),
