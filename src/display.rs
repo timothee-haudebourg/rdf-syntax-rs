@@ -2,7 +2,7 @@ use std::fmt;
 
 use langtag::{LangTag, LangTagBuf};
 use rdf_types::{
-    dataset::{BTreeDataset, BTreeGraph, IndexedBTreeDataset, IndexedBTreeGraph},
+    BTreeDataset, BTreeGraph, IndexedBTreeDataset, IndexedBTreeGraph,
     diff::{ColoredRdfDiff, RdfDiff},
 };
 

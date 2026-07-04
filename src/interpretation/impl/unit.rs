@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use iref::Iri;
-use rdf_types::domain::r#static::StaticDomain;
+use rdf_types::StaticDomain;
 
 use crate::{
     CowLiteral, GroundInterpretationMut, GroundTerm, LiteralRef, Term,
