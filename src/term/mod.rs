@@ -4,6 +4,7 @@ use std::fmt;
 use std::hash::Hash;
 
 use iref::{Iri, IriBuf};
+use rdf_types::pattern::{AsPattern, Pattern};
 
 use crate::{BlankId, BlankIdBuf, Id, IdRef, Literal, LiteralRef, RdfDisplay};
 
@@ -225,5 +226,25 @@ impl<'a> PartialOrd<TermRef<'a>> for Term {
             (Self::Ground(_), TermRef::BlankId(_)) => Some(Ordering::Greater),
             (Self::Ground(a), TermRef::Ground(b)) => a.partial_cmp(b),
         }
+    }
+}
+
+impl AsPattern for Term {
+    type Ground = GroundTerm;
+    type Var = BlankId;
+
+    fn as_pattern(&self) -> Pattern<&GroundTerm, &BlankId> {
+        match self {
+            Self::Ground(g) => Pattern::Ground(g),
+            Self::BlankId(x) => Pattern::Var(x),
+        }
+    }
+
+    fn is_ground(&self) -> bool {
+        matches!(self, Self::Ground(_))
+    }
+
+    fn is_var(&self) -> bool {
+        matches!(self, Self::BlankId(_))
     }
 }

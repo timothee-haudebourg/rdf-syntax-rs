@@ -1,9 +1,10 @@
 use core::fmt;
 use std::borrow::Cow;
 use std::cmp::Ordering;
+use std::str::FromStr;
 
 use crate::{BlankId, BlankIdBuf, RdfDisplay};
-use iref::{Iri, IriBuf};
+use iref::{InvalidIri, Iri, IriBuf};
 
 mod r#ref;
 pub use r#ref::*;
@@ -74,6 +75,26 @@ impl Id {
         match self {
             Self::BlankId(blank_id) => CowId::BlankId(Cow::Owned(blank_id)),
             Self::Iri(iri) => CowId::Iri(Cow::Owned(iri)),
+        }
+    }
+}
+
+impl FromStr for Id {
+    type Err = InvalidIri<String>;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match BlankIdBuf::from_str(s) {
+            Ok(b) => Ok(Self::BlankId(b)),
+            Err(_) => IriBuf::from_str(s).map(Self::Iri),
+        }
+    }
+}
+
+impl AsRef<str> for Id {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::BlankId(b) => b.as_ref(),
+            Self::Iri(i) => i.as_ref(),
         }
     }
 }
