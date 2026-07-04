@@ -2,6 +2,7 @@ use core::fmt;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 
+use into_owned_trait::IntoOwned;
 use iref::{Iri, IriBuf};
 
 use crate::{
@@ -119,6 +120,29 @@ impl<'a> From<TermRef<'a>> for CowTerm<'a> {
 impl From<CowTerm<'_>> for Term {
     fn from(value: CowTerm<'_>) -> Self {
         value.into_owned()
+    }
+}
+
+impl IntoOwned for CowTerm<'_> {
+    type Owned = Term;
+
+    fn into_owned(self) -> Term {
+        match self {
+            Self::BlankId(b) => Term::BlankId(b.into_owned()),
+            Self::Ground(t) => Term::Ground(t.into_owned()),
+        }
+    }
+}
+
+impl equivalent::Equivalent<Term> for CowTerm<'_> {
+    fn equivalent(&self, key: &Term) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<Term> for CowTerm<'_> {
+    fn compare(&self, key: &Term) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
     }
 }
 

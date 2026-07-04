@@ -2,6 +2,7 @@ use core::fmt;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 
+use into_owned_trait::IntoOwned;
 use iref::Iri;
 
 use crate::{BlankId, IdRef, LiteralRef, RdfDisplay};
@@ -100,11 +101,31 @@ impl<'a> TermRef<'a> {
 
 impl TermRef<'_> {
     /// Clones the referenced term.
-    pub fn to_owned(self) -> Term {
+    pub fn to_owned(&self) -> Term {
+        (*self).into_owned()
+    }
+}
+
+impl IntoOwned for TermRef<'_> {
+    type Owned = Term;
+
+    fn into_owned(self) -> Term {
         match self {
             Self::BlankId(blank_id) => Term::BlankId(blank_id.to_owned()),
             Self::Ground(named) => Term::Ground(named.to_owned()),
         }
+    }
+}
+
+impl equivalent::Equivalent<Term> for TermRef<'_> {
+    fn equivalent(&self, key: &Term) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<Term> for TermRef<'_> {
+    fn compare(&self, key: &Term) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
     }
 }
 

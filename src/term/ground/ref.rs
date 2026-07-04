@@ -2,6 +2,7 @@ use core::fmt;
 use std::borrow::Cow;
 use std::cmp::Ordering;
 
+use into_owned_trait::IntoOwned;
 use iref::Iri;
 
 use crate::{LiteralRef, RdfDisplay};
@@ -50,11 +51,31 @@ impl<'a> GroundTermRef<'a> {
 }
 
 impl GroundTermRef<'_> {
-    pub fn to_owned(self) -> GroundTerm {
+    pub fn to_owned(&self) -> GroundTerm {
+        (*self).into_owned()
+    }
+}
+
+impl IntoOwned for GroundTermRef<'_> {
+    type Owned = GroundTerm;
+
+    fn into_owned(self) -> GroundTerm {
         match self {
             Self::Iri(iri) => GroundTerm::Iri(iri.to_owned()),
-            Self::Literal(l) => GroundTerm::Literal(l.to_owned()),
+            Self::Literal(l) => GroundTerm::Literal(l.into_owned()),
         }
+    }
+}
+
+impl equivalent::Equivalent<GroundTerm> for GroundTermRef<'_> {
+    fn equivalent(&self, key: &GroundTerm) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<GroundTerm> for GroundTermRef<'_> {
+    fn compare(&self, key: &GroundTerm) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
     }
 }
 
