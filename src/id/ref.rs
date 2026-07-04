@@ -4,6 +4,8 @@ use std::cmp::Ordering;
 
 use iref::{Iri, IriBuf};
 
+use into_owned_trait::IntoOwned;
+
 use crate::{BlankId, BlankIdBuf, RdfDisplay};
 
 use super::{CowId, Id};
@@ -47,7 +49,7 @@ impl<'a> IdRef<'a> {
 
 impl IdRef<'_> {
     pub fn to_owned(&self) -> Id {
-        self.into_owned()
+        (*self).into_owned()
     }
 
     pub fn into_owned(self) -> Id {
@@ -154,5 +156,43 @@ impl PartialOrd<Id> for IdRef<'_> {
             (Self::Iri(_), Id::BlankId(_)) => Some(Ordering::Greater),
             (Self::Iri(a), Id::Iri(b)) => (*a).partial_cmp(b),
         }
+    }
+}
+
+impl AsRef<str> for IdRef<'_> {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::BlankId(b) => b.as_ref(),
+            Self::Iri(i) => i.as_str(),
+        }
+    }
+}
+
+impl IntoOwned for IdRef<'_> {
+    type Owned = Id;
+
+    fn into_owned(self) -> Id {
+        match self {
+            Self::BlankId(blank_id) => Id::BlankId(blank_id.to_owned()),
+            Self::Iri(iri) => Id::Iri(iri.to_owned()),
+        }
+    }
+}
+
+impl From<IdRef<'_>> for Id {
+    fn from(value: IdRef<'_>) -> Self {
+        value.into_owned()
+    }
+}
+
+impl equivalent::Equivalent<Id> for IdRef<'_> {
+    fn equivalent(&self, key: &Id) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<Id> for IdRef<'_> {
+    fn compare(&self, key: &Id) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
     }
 }

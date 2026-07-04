@@ -1,6 +1,8 @@
 use core::fmt;
 use std::borrow::Cow;
+use std::cmp::Ordering;
 
+use into_owned_trait::IntoOwned;
 use iref::{Iri, IriBuf};
 
 use crate::{BlankId, BlankIdBuf, Id, IdRef, RdfDisplay};
@@ -46,6 +48,38 @@ impl CowId<'_> {
             Self::BlankId(b) => Id::BlankId(b.into_owned()),
             Self::Iri(iri) => Id::Iri(iri.into_owned()),
         }
+    }
+}
+
+impl AsRef<str> for CowId<'_> {
+    fn as_ref(&self) -> &str {
+        match self {
+            Self::BlankId(b) => b.as_ref(),
+            Self::Iri(i) => i.as_str(),
+        }
+    }
+}
+
+impl IntoOwned for CowId<'_> {
+    type Owned = Id;
+
+    fn into_owned(self) -> Id {
+        match self {
+            Self::BlankId(b) => Id::BlankId(b.into_owned()),
+            Self::Iri(iri) => Id::Iri(iri.into_owned()),
+        }
+    }
+}
+
+impl equivalent::Equivalent<Id> for CowId<'_> {
+    fn equivalent(&self, key: &Id) -> bool {
+        self == key
+    }
+}
+
+impl equivalent::Comparable<Id> for CowId<'_> {
+    fn compare(&self, key: &Id) -> std::cmp::Ordering {
+        self.partial_cmp(key).unwrap()
     }
 }
 
@@ -130,6 +164,54 @@ impl PartialEq<&BlankId> for CowId<'_> {
 impl PartialEq<&BlankIdBuf> for CowId<'_> {
     fn eq(&self, other: &&BlankIdBuf) -> bool {
         self.eq(*other)
+    }
+}
+
+impl PartialEq<Id> for CowId<'_> {
+    fn eq(&self, other: &Id) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
+impl PartialEq<CowId<'_>> for Id {
+    fn eq(&self, other: &CowId<'_>) -> bool {
+        self.as_ref() == other.as_ref()
+    }
+}
+
+impl PartialEq<IdRef<'_>> for CowId<'_> {
+    fn eq(&self, other: &IdRef<'_>) -> bool {
+        self.as_ref() == *other
+    }
+}
+
+impl PartialEq<CowId<'_>> for IdRef<'_> {
+    fn eq(&self, other: &CowId<'_>) -> bool {
+        *self == other.as_ref()
+    }
+}
+
+impl PartialOrd<Id> for CowId<'_> {
+    fn partial_cmp(&self, other: &Id) -> Option<Ordering> {
+        self.as_ref().partial_cmp(&other.as_ref())
+    }
+}
+
+impl PartialOrd<CowId<'_>> for Id {
+    fn partial_cmp(&self, other: &CowId<'_>) -> Option<Ordering> {
+        self.as_ref().partial_cmp(&other.as_ref())
+    }
+}
+
+impl PartialOrd<IdRef<'_>> for CowId<'_> {
+    fn partial_cmp(&self, other: &IdRef<'_>) -> Option<Ordering> {
+        self.as_ref().partial_cmp(other)
+    }
+}
+
+impl PartialOrd<CowId<'_>> for IdRef<'_> {
+    fn partial_cmp(&self, other: &CowId<'_>) -> Option<Ordering> {
+        self.partial_cmp(&other.as_ref())
     }
 }
 
