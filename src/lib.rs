@@ -6,11 +6,15 @@ pub use iref::{InvalidIri, Iri, IriBuf, IriError, IriRef, IriRefBuf, iri, iri_re
 pub use rdf_types;
 pub use rdf_types::*;
 
+pub use langtag;
+pub use langtag::{LangTag, LangTagBuf};
+
 mod blankid;
 mod display;
 mod id;
 mod interpretation;
 mod literal;
+mod macros;
 mod quad;
 mod schema;
 mod term;
