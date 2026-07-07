@@ -5,14 +5,14 @@ edition = "2024"
 
 [features]
 default = []
-serde = ["dep:serde", "iref/serde", "langtag/serde"]
+serde = ["dep:serde", "rdf-types/serde", "iref/serde", "langtag/serde"]
 uuid-generator = ["uuid-generator-v3", "uuid-generator-v4", "uuid-generator-v5"]
 uuid-generator-v3 = ["uuid", "uuid/v3"]
 uuid-generator-v4 = ["uuid", "uuid/v4"]
 uuid-generator-v5 = ["uuid", "uuid/v5"]
 
 [dependencies]
-rdf-types.path = "../rdf-types"
+rdf-types = "1.0"
 iref = "4.0.0"
 langtag = "0.4.0"
 equivalent = "1.0.2"
