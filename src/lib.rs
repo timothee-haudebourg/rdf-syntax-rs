@@ -1,15 +1,15 @@
-#[doc(hidden)]
+/// IRI types re-export.
 pub use iref;
-pub use iref::*;
+pub use iref::{InvalidIri, Iri, IriBuf, IriError, IriRef, IriRefBuf, iri, iri_ref};
 
-#[doc(hidden)]
+/// RDF types re-export.
 pub use rdf_types;
 pub use rdf_types::*;
 
 mod blankid;
 mod display;
 mod id;
-pub mod interpretation;
+mod interpretation;
 mod literal;
 mod quad;
 mod schema;
@@ -19,7 +19,7 @@ mod triple;
 pub use blankid::*;
 pub use display::*;
 pub use id::*;
-pub use interpretation::{GroundInterpretation, GroundInterpretationMut};
+pub use interpretation::*;
 pub use literal::*;
 pub use quad::*;
 pub use schema::*;

@@ -221,7 +221,7 @@ impl<'a> PartialEq<TermRef<'a>> for Term {
 impl<'a> PartialOrd<TermRef<'a>> for Term {
     fn partial_cmp(&self, other: &TermRef<'a>) -> Option<Ordering> {
         match (self, other) {
-            (Self::BlankId(a), TermRef::BlankId(b)) => a.as_blank_id().partial_cmp(b),
+            (Self::BlankId(a), TermRef::BlankId(b)) => a.as_blank_id().partial_cmp(*b),
             (Self::BlankId(_), TermRef::Ground(_)) => Some(Ordering::Less),
             (Self::Ground(_), TermRef::BlankId(_)) => Some(Ordering::Greater),
             (Self::Ground(a), TermRef::Ground(b)) => a.partial_cmp(b),

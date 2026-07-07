@@ -1,18 +1,18 @@
 //! Resource interpretations.
 use std::borrow::Cow;
 
+use iref::Iri;
+use rdf_types::Domain;
+
 use crate::{
     BlankId, CowGroundTerm, CowId, CowLiteral, CowTerm, GroundTermRef, IdRef, LiteralRef, TermRef,
 };
 
-mod r#impl;
-pub use r#impl::*;
-
 pub mod fallible;
-pub use fallible::FallibleGroundInterpretation;
+mod r#impl;
 
-use iref::Iri;
-use rdf_types::Domain;
+pub use fallible::*;
+pub use r#impl::*;
 
 /// RDF resource interpretation.
 pub trait GroundInterpretation: Domain {
@@ -25,33 +25,6 @@ pub trait GroundInterpretation: Domain {
             GroundTermRef::Iri(iri) => self.iri(iri),
             GroundTermRef::Literal(l) => self.literal(l),
         }
-    }
-}
-
-/// Interpretation that can return an iterator over the known RDF resources.
-pub trait TraversableInterpretation: GroundInterpretation {
-    type Resources<'a>: Iterator<Item = &'a Self::Resource>
-    where
-        Self: 'a;
-
-    fn resources(&self) -> Self::Resources<'_>;
-}
-
-/// Interpretation that can spawn fresh new resources.
-pub trait GenerativeInterpretation: GroundInterpretation {
-    /// Create a new resource.
-    fn new_resource(&mut self) -> Self::Resource;
-}
-
-/// Interpretation that can spawn fresh new resources.
-pub trait ConstGenerativeInterpretation: GroundInterpretation {
-    /// Create a new resource.
-    fn new_resource(&self) -> Self::Resource;
-}
-
-impl<I: ConstGenerativeInterpretation> GenerativeInterpretation for I {
-    fn new_resource(&mut self) -> Self::Resource {
-        ConstGenerativeInterpretation::new_resource(self)
     }
 }
 

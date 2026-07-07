@@ -20,6 +20,7 @@ into-owned-trait = "1.1"
 
 # Minor
 utf8-decode = "2.0.0"
+str-newtype = "2.0.0"
 
 # Optional
 serde = { version = "1.0", features = ["derive"], optional = true }

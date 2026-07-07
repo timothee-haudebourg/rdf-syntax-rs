@@ -1,30 +1,29 @@
 use std::borrow::Cow;
 
 use iref::Iri;
-use rdf_types::{Domain, StaticDomain};
+use rdf_types::{Domain, GenDomain, StaticDomain};
 
 use crate::{
     BlankId, CowLiteral, Generator, GroundInterpretation, GroundInterpretationMut, LiteralRef,
     Term,
     interpretation::{
-        GenerativeInterpretation, Interpretation, InterpretationMut, ReverseGroundInterpretation,
-        ReverseInterpretation,
+        Interpretation, InterpretationMut, ReverseGroundInterpretation, ReverseInterpretation,
     },
 };
 
 /// Combines any RDF interpretation with a node id generator.
 ///
-/// - Provides a [`GenerativeInterpretation`] implementation, using the given
+/// - Provides a [`GenDomain`] implementation, using the given
 ///   generator to create fresh node identifiers.
 /// - Assigns a node identifier to each new resource created by
-///   [`GenerativeInterpretation::new_resource`], based on the generator.
+///   [`GenDomain::new_resource`], based on the generator.
 ///
 /// Note that in the case of the unit (`()`) interpretation, using
-/// [`GeneratorInterpretation`] will give you a similar result but with other
-/// advantages (such as a [`ConstGenerativeInterpretation`] implementation).
+/// [`GenDomain`] will give you a similar result but with other
+/// advantages (such as a [`ConstGenDomain`] implementation).
 ///
-/// [`GeneratorInterpretation`]: super::GeneratorInterpretation
-/// [`ConstGenerativeInterpretation`]: crate::interpretation::ConstGenerativeInterpretation
+/// [`GenDomain`]: rdf_types::GenDomain
+/// [`ConstGenDomain`]: rdf_types::ConstGenDomain
 pub struct WithIriGenerator<G, I = StaticDomain<Term>> {
     interpretation: I,
     generator: G,
@@ -110,7 +109,7 @@ impl<I: ReverseGroundInterpretation, G> ReverseGroundInterpretation for WithIriG
     }
 }
 
-impl<I: InterpretationMut, G: Generator> GenerativeInterpretation for WithIriGenerator<G, I> {
+impl<I: InterpretationMut, G: Generator> GenDomain for WithIriGenerator<G, I> {
     fn new_resource(&mut self) -> Self::Resource {
         let id = self.generator.next_id();
         self.interpretation.insert_id(id)
@@ -225,7 +224,7 @@ impl<I: ReverseInterpretation, G> ReverseInterpretation for WithGenerator<G, I> 
     }
 }
 
-impl<I: InterpretationMut, G: Generator> GenerativeInterpretation for WithGenerator<G, I> {
+impl<I: InterpretationMut, G: Generator> GenDomain for WithGenerator<G, I> {
     fn new_resource(&mut self) -> Self::Resource {
         let id = self.generator.next_id();
         self.interpretation.insert_id(id)

@@ -1,21 +1,20 @@
 use std::{borrow::Cow, cell::RefCell};
 
 use iref::Iri;
-use rdf_types::Domain;
+use rdf_types::{ConstGenDomain, Domain};
 
 use crate::{
     BlankId, CowLiteral, Generator, GroundInterpretation, GroundInterpretationMut, LiteralRef,
     Term,
     interpretation::{
-        ConstGenerativeInterpretation, Interpretation, InterpretationMut,
-        ReverseGroundInterpretation, ReverseInterpretation,
+        Interpretation, InterpretationMut, ReverseGroundInterpretation, ReverseInterpretation,
     },
 };
 
 /// Lexical interpretation based on a term generator.
-pub struct GeneratorInterpretation<G>(RefCell<G>);
+pub struct GenInterpretation<G>(RefCell<G>);
 
-impl<G> GeneratorInterpretation<G> {
+impl<G> GenInterpretation<G> {
     pub fn new(generator: G) -> Self {
         Self(RefCell::new(generator))
     }
@@ -25,11 +24,11 @@ impl<G> GeneratorInterpretation<G> {
     }
 }
 
-impl<G> Domain for GeneratorInterpretation<G> {
+impl<G> Domain for GenInterpretation<G> {
     type Resource = Term;
 }
 
-impl<G> GroundInterpretation for GeneratorInterpretation<G> {
+impl<G> GroundInterpretation for GenInterpretation<G> {
     fn iri(&self, iri: &Iri) -> Option<Self::Resource> {
         Some(iri.to_owned().into())
     }
@@ -39,13 +38,13 @@ impl<G> GroundInterpretation for GeneratorInterpretation<G> {
     }
 }
 
-impl<G> Interpretation for GeneratorInterpretation<G> {
+impl<G> Interpretation for GenInterpretation<G> {
     fn blank_id(&self, blank_id: &BlankId) -> Option<Self::Resource> {
         Some(blank_id.to_owned().into())
     }
 }
 
-impl<G> GroundInterpretationMut for GeneratorInterpretation<G> {
+impl<G> GroundInterpretationMut for GenInterpretation<G> {
     fn insert_iri<'a>(&mut self, iri: impl Into<Cow<'a, Iri>>) -> Self::Resource {
         iri.into().into_owned().into()
     }
@@ -55,13 +54,13 @@ impl<G> GroundInterpretationMut for GeneratorInterpretation<G> {
     }
 }
 
-impl<G> InterpretationMut for GeneratorInterpretation<G> {
+impl<G> InterpretationMut for GenInterpretation<G> {
     fn insert_blank_id<'a>(&mut self, blank_id: impl Into<Cow<'a, BlankId>>) -> Self::Resource {
         blank_id.into().into_owned().into()
     }
 }
 
-impl<G> ReverseGroundInterpretation for GeneratorInterpretation<G> {
+impl<G> ReverseGroundInterpretation for GenInterpretation<G> {
     type Iris<'a>
         = std::option::IntoIter<&'a Iri>
     where
@@ -80,7 +79,7 @@ impl<G> ReverseGroundInterpretation for GeneratorInterpretation<G> {
     }
 }
 
-impl<G> ReverseInterpretation for GeneratorInterpretation<G> {
+impl<G> ReverseInterpretation for GenInterpretation<G> {
     type BlankIds<'a>
         = std::option::IntoIter<&'a BlankId>
     where
@@ -91,7 +90,7 @@ impl<G> ReverseInterpretation for GeneratorInterpretation<G> {
     }
 }
 
-impl<G: Generator> ConstGenerativeInterpretation for GeneratorInterpretation<G> {
+impl<G: Generator> ConstGenDomain for GenInterpretation<G> {
     fn new_resource(&self) -> Self::Resource {
         let mut generator = self.0.borrow_mut();
         generator.next_id().into()

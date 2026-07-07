@@ -190,7 +190,7 @@ impl<'a> PartialEq<IdRef<'a>> for Id {
 impl<'a> PartialOrd<IdRef<'a>> for Id {
     fn partial_cmp(&self, other: &IdRef<'a>) -> Option<Ordering> {
         match (self, other) {
-            (Self::BlankId(a), IdRef::BlankId(b)) => a.as_blank_id().partial_cmp(b),
+            (Self::BlankId(a), IdRef::BlankId(b)) => a.as_blank_id().partial_cmp(*b),
             (Self::BlankId(_), IdRef::Iri(_)) => Some(Ordering::Less),
             (Self::Iri(_), IdRef::BlankId(_)) => Some(Ordering::Greater),
             (Self::Iri(a), IdRef::Iri(b)) => a.as_iri().partial_cmp(b),
