@@ -1,7 +1,7 @@
 #[macro_export]
 #[doc(hidden)]
 macro_rules! unexpected_token {
-	() => {};
+    () => {};
 }
 
 /// Creates a gRDF triple.
@@ -46,7 +46,7 @@ macro_rules! grdf_triple {
 	{
 		@from ($($acc:tt)*)
 	} => {
-		<$crate::Triple>::new($($acc)*)
+		<$crate::rdf_types::Triple::<$crate::Term>>::new($($acc)*)
 	};
 	{
 		@from ($($acc:tt)*) $t:tt $($rest:tt)*
@@ -177,12 +177,12 @@ macro_rules! grdf_quad {
 	{
 		@from ($s:expr, $p:expr, $o:expr,)
 	} => {
-		<$crate::Quad>::new($s, $p, $o, None)
+		<$crate::rdf_types::Quad::<$crate::Term>>::new($s, $p, $o, None)
 	};
 	{
 		@from ($s:expr, $p:expr, $o:expr, $g:expr,)
 	} => {
-		<$crate::Quad>::new($s, $p, $o, Some($g))
+		<$crate::rdf_types::Quad::<$crate::Term>>::new($s, $p, $o, Some($g))
 	};
 	{
 		@from ($($acc:tt)*) $t:tt $($rest:tt)*
@@ -199,7 +199,7 @@ macro_rules! grdf_quad {
 
 /// Creates a gRDF quad pattern.
 ///
-/// The type of the returned value is `Quad<ResourceOrVar<Term, _>>`.
+/// The type of the returned value is `Quad<Pattern<Term, _>>`.
 ///
 /// This is similar to [`grdf_quad`], but with the addition of variables, which
 /// can be introduced using the syntax `?ident`. The variable `ident` must be
@@ -210,37 +210,37 @@ macro_rules! grdf_quad_pattern {
 	{
 		@from ($($acc:tt)*) ? $id:ident $($rest:tt)*
 	} => {
-		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::pattern::ResourceOrVar::Var($id),) $($rest)*)
+		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::rdf_types::pattern::Pattern::Var($id),) $($rest)*)
 	};
 	{
 		@from ($($acc:tt)*) $id:ident $($rest:tt)*
 	} => {
-		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::pattern::ResourceOrVar::Resource($id),) $($rest)*)
+		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::rdf_types::pattern::Pattern::Ground($id),) $($rest)*)
 	};
 	{
 		@from ($($acc:tt)*) < $iri:literal > $($rest:tt)*
 	} => {
-		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::pattern::ResourceOrVar::Resource($crate::Term::iri($crate::static_iref::iri!($iri).to_owned())),) $($rest)*)
+		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::rdf_types::pattern::Pattern::Ground($crate::Term::iri($crate::iri!($iri).to_owned())),) $($rest)*)
 	};
 	{
 		@from ($($acc:tt)*) _ : $id:literal $($rest:tt)*
 	} => {
-		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::pattern::ResourceOrVar::Resource($crate::Term::Anonymous($crate::BlankIdBuf::from_suffix($id).unwrap())),) $($rest)*)
+		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::rdf_types::pattern::Pattern::Ground($crate::Term::BlankId($crate::BlankIdBuf::from_suffix($id).unwrap())),) $($rest)*)
 	};
 	{
 		@from ($($acc:tt)*) $value:literal ^^ $ty:literal $($rest:tt)*
 	} => {
-		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::pattern::ResourceOrVar::Resource($crate::Term::literal($crate::Literal::new(
+		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::rdf_types::pattern::Pattern::Ground($crate::Term::literal($crate::Literal::new(
 			$value.to_owned(),
 			$crate::LiteralType::Any(
-				$crate::static_iref::iri!($ty).to_owned()
+				$crate::iri!($ty).to_owned()
 			)
 		))),) $($rest)*)
 	};
 	{
 		@from ($($acc:tt)*) $value:literal $($rest:tt)*
 	} => {
-		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::pattern::ResourceOrVar::Resource($crate::Term::literal($crate::Literal::new(
+		$crate::grdf_quad_pattern!(@from ($($acc)* $crate::rdf_types::pattern::Pattern::Ground($crate::Term::literal($crate::Literal::new(
 			$value.to_owned(),
 			$crate::LiteralType::Any(
 				$crate::XSD_STRING.to_owned()
@@ -250,12 +250,12 @@ macro_rules! grdf_quad_pattern {
 	{
 		@from ($s:expr, $p:expr, $o:expr,)
 	} => {
-		<$crate::Quad<$crate::pattern::ResourceOrVar<$crate::Term, _>>>::new($s, $p, $o, None)
+		<$crate::Quad<$crate::rdf_types::pattern::Pattern<$crate::Term, _>>>::new($s, $p, $o, None)
 	};
 	{
 		@from ($s:expr, $p:expr, $o:expr, $g:expr,)
 	} => {
-		<$crate::Quad<$crate::pattern::ResourceOrVar<$crate::Term, _>>>::new($s, $p, $o, Some($g))
+		<$crate::Quad<$crate::rdf_types::pattern::Pattern<$crate::Term, _>>>::new($s, $p, $o, Some($g))
 	};
 	{
 		@from ($($acc:tt)*) $t:tt $($rest:tt)*
@@ -346,39 +346,70 @@ macro_rules! grdf_quads {
 
 #[cfg(test)]
 mod tests {
-	use iref::iri;
+    use crate::rdf_types::pattern::Pattern;
+    use iref::iri;
 
-	#[test]
-	fn grdf_triple_macro() {
-		let _ = grdf_triple! [
-			_:"foo" <"https://example.org/#foo"> "foo"
-		];
-	}
+    #[test]
+    fn grdf_triple_macro() {
+        let _ = grdf_triple! [
+            _:"foo" <"https://example.org/#foo"> "foo"
+        ];
+    }
 
-	#[test]
-	fn grdf_triples_macro() {
-		let term = iri!("https://example.org/#iri").to_owned();
-		let _ = grdf_triples! [
-			_:"foo" <"https://example.org/#foo"> "foo" .
-			<"https://example.org/#bar"> _:"bar" "bar"^^"https://example.org/#datatype" .
-			<"https://example.org/#baz"> term "value" .
-		];
-	}
+    #[test]
+    fn grdf_triples_macro() {
+        let term = iri!("https://example.org/#iri").to_owned();
+        let _ = grdf_triples! [
+            _:"foo" <"https://example.org/#foo"> "foo" .
+            <"https://example.org/#bar"> _:"bar" "bar"^^"https://example.org/#datatype" .
+            <"https://example.org/#baz"> term "value" .
+        ];
+    }
 
-	#[test]
-	fn grdf_quad_macro() {
-		let _ = grdf_quad! [
-			_:"foo" <"https://example.org/#foo"> "foo"
-		];
-	}
+    #[test]
+    fn grdf_quad_macro() {
+        let _ = grdf_quad! [
+            _:"foo" <"https://example.org/#foo"> "foo"
+        ];
+    }
 
-	#[test]
-	fn grdf_quads_macro() {
-		let term = iri!("https://example.org/#iri").to_owned();
-		let _ = grdf_quads! [
-			_:"foo" <"https://example.org/#foo"> "foo" .
-			<"https://example.org/#bar"> _:"bar" "bar"^^"https://example.org/#datatype" .
-			<"https://example.org/#baz"> term "value" <"https://example.org/#graph"> .
-		];
-	}
+    #[test]
+    fn grdf_quads_macro() {
+        let term = iri!("https://example.org/#iri").to_owned();
+        let _ = grdf_quads! [
+            _:"foo" <"https://example.org/#foo"> "foo" .
+            <"https://example.org/#bar"> _:"bar" "bar"^^"https://example.org/#datatype" .
+            <"https://example.org/#baz"> term "value" <"https://example.org/#graph"> .
+        ];
+    }
+
+    #[test]
+    fn grdf_quad_pattern_macro_var() {
+        let s = 1;
+        let g = 2;
+        let pattern = grdf_quad_pattern! [
+            ?s <"https://example.org/#foo"> "foo"^^"https://example.org/#datatype" ?g
+        ];
+
+        assert!(matches!(pattern.0, Pattern::Var(1)));
+        assert!(matches!(pattern.1, Pattern::Ground(_)));
+        assert!(matches!(pattern.2, Pattern::Ground(_)));
+        assert!(matches!(pattern.3, Some(Pattern::Var(2))));
+    }
+
+    #[test]
+    fn grdf_quad_pattern_macro_ground() {
+        let term = crate::Term::iri(iri!("https://example.org/#iri").to_owned());
+        let pattern: crate::Quad<Pattern<crate::Term, i32>> = grdf_quad_pattern! [
+            _:"foo" term "value"
+        ];
+
+        assert!(matches!(
+            pattern.0,
+            Pattern::Ground(crate::Term::BlankId(_))
+        ));
+        assert!(matches!(pattern.1, Pattern::Ground(_)));
+        assert!(matches!(pattern.2, Pattern::Ground(_)));
+        assert!(pattern.3.is_none());
+    }
 }
