@@ -6,7 +6,7 @@ mod blank;
 mod uuid;
 
 pub use blank::BlankIdGenerator;
-pub use uuid::Uuid;
+pub use uuid::UuidGenerator;
 
 /// IRI generator.
 pub trait IriGenerator {

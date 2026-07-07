@@ -1,3 +1,13 @@
+#[cfg(any(
+	feature = "uuid-generator-v3",
+	feature = "uuid-generator-v4",
+	feature = "uuid-generator-v5"
+))]
+use {
+	super::{Generator, IriGenerator},
+	crate::Id,
+};
+
 /// Generates UUID blank node identifiers based on the [`uuid`](https://crates.io/crates/uuid) crate.
 ///
 /// This is an enum type with different UUID versions supported
@@ -9,7 +19,7 @@
 /// use this type.
 /// You also need to enable the features of each version you need
 /// in the `uuid` crate.
-pub enum Uuid {
+pub enum UuidGenerator {
 	/// UUIDv3.
 	///
 	/// You must provide a vocabulary UUID and a name.
@@ -36,7 +46,8 @@ pub enum Uuid {
 	feature = "uuid-generator-v4",
 	feature = "uuid-generator-v5"
 ))]
-impl Uuid {
+impl UuidGenerator {
+	/// Generates the next UUID.
 	pub fn next_uuid(&self) -> uuid::Uuid {
 		match self {
 			#[cfg(feature = "uuid-generator-v3")]
@@ -54,13 +65,24 @@ impl Uuid {
 	feature = "uuid-generator-v4",
 	feature = "uuid-generator-v5"
 ))]
-impl super::IriGenerator for Uuid {
+impl IriGenerator for UuidGenerator {
 	fn next_iri(&mut self) -> iref::IriBuf {
 		let mut buffer: Vec<u8> = vec![0; uuid::adapter::Urn::LENGTH];
 		let uuid = self.next_uuid();
 		let len = uuid.to_urn().encode_lower(buffer.as_mut()).len();
 		buffer.truncate(len);
 		iref::IriBuf::from_bytes(buffer).unwrap()
+	}
+}
+
+#[cfg(any(
+	feature = "uuid-generator-v3",
+	feature = "uuid-generator-v4",
+	feature = "uuid-generator-v5"
+))]
+impl Generator for UuidGenerator {
+	fn next_id(&mut self) -> Id {
+		Id::Iri(self.next_iri())
 	}
 }
 
@@ -76,7 +98,7 @@ mod tests {
 	#[cfg(feature = "uuid-generator-v3")]
 	#[test]
 	fn uuidv3_iri() {
-		let mut uuid_gen = Uuid::V3(
+		let mut uuid_gen = UuidGenerator::V3(
 			uuid::Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap(),
 			"test".to_string(),
 		);
@@ -91,7 +113,7 @@ mod tests {
 	#[cfg(feature = "uuid-generator-v4")]
 	#[test]
 	fn uuidv4_iri() {
-		let mut uuid_gen = Uuid::V4;
+		let mut uuid_gen = UuidGenerator::V4;
 		for _ in 0..100 {
 			use crate::generator::IriGenerator;
 
@@ -103,7 +125,7 @@ mod tests {
 	#[cfg(feature = "uuid-generator-v5")]
 	#[test]
 	fn uuidv5_iri() {
-		let mut uuid_gen = Uuid::V5(
+		let mut uuid_gen = UuidGenerator::V5(
 			uuid::Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap(),
 			"test".to_string(),
 		);

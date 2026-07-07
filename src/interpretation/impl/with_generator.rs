@@ -24,104 +24,13 @@ use crate::{
 ///
 /// [`GenDomain`]: rdf_types::GenDomain
 /// [`ConstGenDomain`]: rdf_types::ConstGenDomain
-pub struct WithIriGenerator<G, I = StaticDomain<Term>> {
-	interpretation: I,
-	generator: G,
-}
-
-impl<G, I> WithIriGenerator<G, I> {
-	pub fn new(interpretation: I, generator: G) -> Self {
-		Self {
-			interpretation,
-			generator,
-		}
-	}
-
-	pub fn into_parts(self) -> (I, G) {
-		(self.interpretation, self.generator)
-	}
-
-	pub fn inner_interpretation(&self) -> &I {
-		&self.interpretation
-	}
-
-	pub fn inner_interpretation_mut(&mut self) -> &mut I {
-		&mut self.interpretation
-	}
-
-	pub fn generator(&self) -> &G {
-		&self.generator
-	}
-
-	pub fn generator_mut(&mut self) -> &mut G {
-		&mut self.generator
-	}
-
-	pub fn into_inner_interpretation(self) -> I {
-		self.interpretation
-	}
-
-	pub fn into_generator(self) -> G {
-		self.generator
-	}
-}
-
-impl<I: Domain, G> Domain for WithIriGenerator<G, I> {
-	type Resource = I::Resource;
-}
-
-impl<I: GroundInterpretation, G> GroundInterpretation for WithIriGenerator<G, I> {
-	fn iri(&self, iri: &Iri) -> Option<Self::Resource> {
-		self.interpretation.iri(iri)
-	}
-
-	fn literal<'a>(&self, literal: impl Into<LiteralRef<'a>>) -> Option<Self::Resource> {
-		self.interpretation.literal(literal)
-	}
-}
-
-impl<I: GroundInterpretationMut, G> GroundInterpretationMut for WithIriGenerator<G, I> {
-	fn insert_iri<'a>(&mut self, iri: impl Into<Cow<'a, Iri>>) -> Self::Resource {
-		self.interpretation.insert_iri(iri)
-	}
-
-	fn insert_literal<'a>(&mut self, literal: impl Into<CowLiteral<'a>>) -> Self::Resource {
-		self.interpretation.insert_literal(literal)
-	}
-}
-
-impl<I: ReverseGroundInterpretation, G> ReverseGroundInterpretation for WithIriGenerator<G, I> {
-	type Iris<'a>
-		= I::Iris<'a>
-	where
-		Self: 'a;
-	type Literals<'a>
-		= I::Literals<'a>
-	where
-		Self: 'a;
-
-	fn iris_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::Iris<'a> {
-		self.interpretation.iris_of(resource)
-	}
-
-	fn literals_of<'a>(&'a self, resource: &'a Self::Resource) -> Self::Literals<'a> {
-		self.interpretation.literals_of(resource)
-	}
-}
-
-impl<I: InterpretationMut, G: Generator> GenDomain for WithIriGenerator<G, I> {
-	fn new_resource(&mut self) -> Self::Resource {
-		let id = self.generator.next_id();
-		self.interpretation.insert_id(id)
-	}
-}
-
 pub struct WithGenerator<G, I = StaticDomain<Term>> {
 	interpretation: I,
 	generator: G,
 }
 
 impl<G, I> WithGenerator<G, I> {
+	/// Combines the given interpretation with the given generator.
 	pub fn new(interpretation: I, generator: G) -> Self {
 		Self {
 			interpretation,
@@ -129,30 +38,40 @@ impl<G, I> WithGenerator<G, I> {
 		}
 	}
 
+	/// Discards this wrapper, returning the inner interpretation and
+	/// generator.
 	pub fn into_parts(self) -> (I, G) {
 		(self.interpretation, self.generator)
 	}
 
+	/// Returns a reference to the inner interpretation.
 	pub fn inner_interpretation(&self) -> &I {
 		&self.interpretation
 	}
 
+	/// Returns a mutable reference to the inner interpretation.
 	pub fn inner_interpretation_mut(&mut self) -> &mut I {
 		&mut self.interpretation
 	}
 
+	/// Returns a reference to the inner generator.
 	pub fn generator(&self) -> &G {
 		&self.generator
 	}
 
+	/// Returns a mutable reference to the inner generator.
 	pub fn generator_mut(&mut self) -> &mut G {
 		&mut self.generator
 	}
 
+	/// Discards this wrapper and the generator, returning the inner
+	/// interpretation.
 	pub fn into_inner_interpretation(self) -> I {
 		self.interpretation
 	}
 
+	/// Discards this wrapper and the interpretation, returning the inner
+	/// generator.
 	pub fn into_generator(self) -> G {
 		self.generator
 	}
