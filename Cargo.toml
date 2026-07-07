@@ -14,7 +14,7 @@ uuid-generator-v5 = ["uuid", "uuid/v5"]
 [dependencies]
 rdf-types = "1.0"
 iref = "4.0.0"
-langtag = "0.4.0"
+langtag = "1.1"
 equivalent = "1.0.2"
 into-owned-trait = "1.1"
 
