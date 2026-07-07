@@ -1,7 +1,16 @@
 [package]
 name = "rdf-syntax"
-version = "0.1.0"
+authors = ["Timothée Haudebourg <author@haudebourg.net>"]
+description = "Lexical (syntactic) representation of RDF resources, built on top of rdf-types."
+categories = ["data-structures"]
+keywords = ["rdf", "w3c", "term", "literal"]
+repository = "https://github.com/timothee-haudebourg/rdf-syntax-rs"
+documentation = "https://docs.rs/rdf-syntax"
+license = "MIT/Apache-2.0"
+readme = "README.md"
 edition = "2024"
+rust-version = "1.89.0"
+version = "1.0.0"
 
 [features]
 default = []
@@ -13,7 +22,7 @@ uuid-generator-v5 = ["uuid", "uuid/v5"]
 
 [dependencies]
 rdf-types = "1.0"
-iref = "4.0.0"
+iref = "4.1"
 langtag = "1.1"
 equivalent = "1.0.2"
 into-owned-trait = "1.1"
