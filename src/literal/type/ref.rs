@@ -21,14 +21,18 @@ pub enum LiteralTypeRef<'a> {
 }
 
 impl<'a> LiteralTypeRef<'a> {
+	/// Checks if this is the general `Any` case (as opposed to a language
+	/// string).
 	pub fn is_any(&self) -> bool {
 		matches!(self, Self::Any(_))
 	}
 
+	/// Checks if this is a language-tagged string (`rdf:langString`).
 	pub fn is_lang_string(&self) -> bool {
 		matches!(self, Self::LangString(_))
 	}
 
+	/// Returns the datatype IRI, unless this is a language-tagged string.
 	pub fn as_any(&self) -> Option<&'a Iri> {
 		match self {
 			Self::Any(iri) => Some(iri),
@@ -36,6 +40,7 @@ impl<'a> LiteralTypeRef<'a> {
 		}
 	}
 
+	/// Returns the language tag, if this is a language-tagged string.
 	pub fn as_lang_string(&self) -> Option<&'a LangTag> {
 		match self {
 			Self::LangString(tag) => Some(tag),
@@ -43,14 +48,17 @@ impl<'a> LiteralTypeRef<'a> {
 		}
 	}
 
+	/// Returns the language tag, if this is a language-tagged string.
 	pub fn lang_tag(&self) -> Option<&'a LangTag> {
 		self.as_lang_string()
 	}
 
+	/// Checks if this is the `xsd:string` datatype.
 	pub fn is_xsd_string(&self) -> bool {
 		self.is_iri(XSD_STRING)
 	}
 
+	/// Checks if this is the given datatype IRI.
 	pub fn is_iri(&self, iri: &Iri) -> bool {
 		match self {
 			Self::Any(i) => *i == iri,
@@ -58,6 +66,7 @@ impl<'a> LiteralTypeRef<'a> {
 		}
 	}
 
+	/// Turns this literal type reference into a copy-on-write literal type.
 	pub fn into_cow(self) -> super::CowLiteralType<'a> {
 		match self {
 			Self::Any(i) => super::CowLiteralType::Any(std::borrow::Cow::Borrowed(i)),
@@ -65,6 +74,7 @@ impl<'a> LiteralTypeRef<'a> {
 		}
 	}
 
+	/// Clones the referenced literal type.
 	pub fn to_owned(self) -> LiteralType {
 		IntoOwned::into_owned(self)
 	}

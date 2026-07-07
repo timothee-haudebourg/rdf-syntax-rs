@@ -22,14 +22,17 @@ pub enum CowGroundTerm<'a> {
 }
 
 impl CowGroundTerm<'_> {
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Iri(_))
 	}
 
+	/// Checks if this is a literal.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Literal(_))
 	}
 
+	/// Returns this ground term as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&Iri> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -37,6 +40,7 @@ impl CowGroundTerm<'_> {
 		}
 	}
 
+	/// Returns this ground term as a literal, if it is one.
 	pub fn as_literal(&self) -> Option<LiteralRef<'_>> {
 		match self {
 			Self::Literal(l) => Some(l.as_ref()),
@@ -44,6 +48,7 @@ impl CowGroundTerm<'_> {
 		}
 	}
 
+	/// Returns a reference to this ground term.
 	pub fn as_ref(&self) -> GroundTermRef<'_> {
 		match self {
 			Self::Iri(iri) => GroundTermRef::Iri(iri),
@@ -51,6 +56,7 @@ impl CowGroundTerm<'_> {
 		}
 	}
 
+	/// Clones the ground term, if needed, to get rid of the borrow.
 	pub fn into_owned(self) -> GroundTerm {
 		match self {
 			Self::Iri(iri) => GroundTerm::Iri(iri.into_owned()),
@@ -60,6 +66,7 @@ impl CowGroundTerm<'_> {
 }
 
 impl<'a> CowGroundTerm<'a> {
+	/// Turns this ground term into a literal, if it is one.
 	pub fn into_literal(self) -> Option<CowLiteral<'a>> {
 		match self {
 			Self::Literal(l) => Some(l),
@@ -67,6 +74,8 @@ impl<'a> CowGroundTerm<'a> {
 		}
 	}
 
+	/// Turns this ground term into a literal, or returns the IRI if it isn't
+	/// one.
 	pub fn try_into_literal(self) -> Result<CowLiteral<'a>, Cow<'a, Iri>> {
 		match self {
 			Self::Literal(l) => Ok(l),
@@ -74,6 +83,7 @@ impl<'a> CowGroundTerm<'a> {
 		}
 	}
 
+	/// Turns this ground term into an IRI, if it is one.
 	pub fn into_iri(self) -> Option<Cow<'a, Iri>> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -81,6 +91,8 @@ impl<'a> CowGroundTerm<'a> {
 		}
 	}
 
+	/// Turns this ground term into an IRI, or returns it unchanged if it
+	/// isn't one.
 	pub fn try_into_iri(self) -> Result<Cow<'a, Iri>, Self> {
 		match self {
 			Self::Iri(iri) => Ok(iri),

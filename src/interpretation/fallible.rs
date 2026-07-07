@@ -16,17 +16,23 @@ use crate::{
 };
 
 /// Fallible ground interpretation.
+///
+/// Fallible counterpart of [`GroundInterpretation`], for interpretations
+/// backed by I/O or otherwise fallible storage.
 pub trait TryGroundInterpretation: Domain {
 	/// Error type.
 	type Error: fmt::Debug + fmt::Display;
 
+	/// Interprets the given IRI, if possible.
 	fn try_iri(&self, iri: &Iri) -> Result<Option<Self::Resource>, Self::Error>;
 
+	/// Interprets the given literal, if possible.
 	fn try_literal<'a>(
 		&self,
 		literal: impl Into<LiteralRef<'a>>,
 	) -> Result<Option<Self::Resource>, Self::Error>;
 
+	/// Interprets the given ground term (an IRI or a literal), if possible.
 	fn try_ground_term<'a>(
 		&self,
 		term: impl Into<GroundTermRef<'a>>,
@@ -62,18 +68,24 @@ impl<I: GroundInterpretation> TryGroundInterpretation for I {
 	}
 }
 
-/// Mutable fallible interpretation.
+/// Mutable fallible ground interpretation.
 pub trait TryGroundInterpretationMut: TryGroundInterpretation {
+	/// Interprets the given IRI, inserting a fresh resource for it if none
+	/// exists yet.
 	fn try_insert_iri<'a>(
 		&mut self,
 		iri: impl Into<Cow<'a, Iri>>,
 	) -> Result<Self::Resource, Self::Error>;
 
+	/// Interprets the given literal, inserting a fresh resource for it if
+	/// none exists yet.
 	fn try_insert_literal<'a>(
 		&mut self,
 		literal: impl Into<CowLiteral<'a>>,
 	) -> Result<Self::Resource, Self::Error>;
 
+	/// Interprets the given ground term, inserting a fresh resource for it
+	/// if none exists yet.
 	fn try_insert_ground_term<'a>(
 		&mut self,
 		term: impl Into<CowGroundTerm<'a>>,
@@ -112,23 +124,30 @@ impl<I: GroundInterpretationMut> TryGroundInterpretationMut for I {
 
 /// Fallible reverse ground interpretation.
 pub trait TryReverseGroundInterpretation: TryGroundInterpretation {
+	/// Iterator over the IRIs of a resource.
 	type TryIris<'a>: Iterator<Item = Result<IriBuf, Self::Error>>
 	where
 		Self: 'a;
+
+	/// Iterator over the literals of a resource.
 	type TryLiterals<'a>: Iterator<Item = Result<Literal, Self::Error>>
 	where
 		Self: 'a;
 
+	/// Returns an iterator over the IRIs of `resource`.
 	fn try_iris_of<'a>(
 		&'a self,
 		resource: &'a Self::Resource,
 	) -> Result<Self::TryIris<'a>, Self::Error>;
 
+	/// Returns an iterator over the literals of `resource`.
 	fn try_literals_of<'a>(
 		&'a self,
 		resource: &'a Self::Resource,
 	) -> Result<Self::TryLiterals<'a>, Self::Error>;
 
+	/// Returns an iterator over the ground terms (IRIs and literals) of
+	/// `resource`.
 	fn try_ground_terms_of<'a>(
 		&'a self,
 		resource: &'a Self::Resource,
@@ -139,6 +158,7 @@ pub trait TryReverseGroundInterpretation: TryGroundInterpretation {
 		})
 	}
 
+	/// Checks whether `resource` has no ground term lexical representation.
 	fn try_is_anonymous(&self, resource: &Self::Resource) -> Result<bool, Self::Error> {
 		Ok(self
 			.try_ground_terms_of(resource)?
@@ -178,6 +198,9 @@ impl<I: ReverseGroundInterpretation> TryReverseGroundInterpretation for I {
 	}
 }
 
+/// Iterator over the ground terms of a resource.
+///
+/// Created by [`TryReverseGroundInterpretation::try_ground_terms_of`].
 pub struct TryGroundTermsOf<'a, I: 'a + ?Sized + TryReverseGroundInterpretation> {
 	iris: I::TryIris<'a>,
 	literals: I::TryLiterals<'a>,
@@ -199,8 +222,11 @@ impl<'a, I: 'a + ?Sized + TryReverseGroundInterpretation> Iterator for TryGround
 /// Same as a fallible ground interpretation, but also interprets blank node
 /// identifiers.
 pub trait TryInterpretation: TryGroundInterpretation {
+	/// Interprets the given blank node identifier, if possible.
 	fn try_blank_id(&self, blank_id: &BlankId) -> Result<Option<Self::Resource>, Self::Error>;
 
+	/// Interprets the given term (a blank node identifier or a ground
+	/// term), if possible.
 	fn try_term<'a>(
 		&self,
 		term: impl Into<TermRef<'a>>,
@@ -211,6 +237,8 @@ pub trait TryInterpretation: TryGroundInterpretation {
 		}
 	}
 
+	/// Interprets the given identifier (a blank node identifier or an IRI),
+	/// if possible.
 	fn try_id<'a>(&self, id: impl Into<IdRef<'a>>) -> Result<Option<Self::Resource>, Self::Error> {
 		match id.into() {
 			IdRef::BlankId(blank_id) => self.try_blank_id(blank_id),
@@ -240,11 +268,15 @@ impl<I: Interpretation> TryInterpretation for I {
 
 /// Mutable fallible interpretation.
 pub trait TryInterpretationMut: TryInterpretation + TryGroundInterpretationMut {
+	/// Interprets the given blank node identifier, inserting a fresh
+	/// resource for it if none exists yet.
 	fn try_insert_blank_id<'a>(
 		&mut self,
 		blank_id: impl Into<Cow<'a, BlankId>>,
 	) -> Result<Self::Resource, Self::Error>;
 
+	/// Interprets the given term, inserting a fresh resource for it if none
+	/// exists yet.
 	fn try_insert_term<'a>(
 		&mut self,
 		term: impl Into<CowTerm<'a>>,
@@ -255,6 +287,8 @@ pub trait TryInterpretationMut: TryInterpretation + TryGroundInterpretationMut {
 		}
 	}
 
+	/// Interprets the given identifier, inserting a fresh resource for it
+	/// if none exists yet.
 	fn try_insert_id<'a>(
 		&mut self,
 		term: impl Into<CowId<'a>>,
@@ -293,15 +327,19 @@ impl<I: InterpretationMut> TryInterpretationMut for I {
 
 /// Fallible reverse interpretation.
 pub trait TryReverseInterpretation: TryReverseGroundInterpretation {
+	/// Iterator over the blank node identifiers of a resource.
 	type TryBlankIds<'a>: Iterator<Item = Result<BlankIdBuf, Self::Error>>
 	where
 		Self: 'a;
 
+	/// Returns an iterator over the blank node identifiers of `resource`.
 	fn try_blank_ids_of<'a>(
 		&'a self,
 		resource: &'a Self::Resource,
 	) -> Result<Self::TryBlankIds<'a>, Self::Error>;
 
+	/// Returns an iterator over the terms (ground terms and blank node
+	/// identifiers) of `resource`.
 	fn try_terms_of<'a>(
 		&'a self,
 		resource: &'a Self::Resource,
@@ -331,6 +369,9 @@ impl<I: ReverseInterpretation> TryReverseInterpretation for I {
 	}
 }
 
+/// Iterator over the terms of a resource.
+///
+/// Created by [`TryReverseInterpretation::try_terms_of`].
 pub struct TryTermsOf<'a, I: 'a + ?Sized + TryReverseInterpretation> {
 	terms: TryGroundTermsOf<'a, I>,
 	blank_ids: I::TryBlankIds<'a>,

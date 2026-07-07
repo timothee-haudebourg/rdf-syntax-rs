@@ -10,21 +10,28 @@ use crate::{BlankId, BlankIdBuf, RdfDisplay};
 
 use super::{CowId, Id};
 
+/// Resource identifier reference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum IdRef<'a> {
+	/// Blank node identifier.
 	BlankId(&'a BlankId),
+
+	/// IRI.
 	Iri(&'a Iri),
 }
 
 impl<'a> IdRef<'a> {
+	/// Checks if this is a blank node identifier.
 	pub fn is_blank_id(&self) -> bool {
 		matches!(self, Self::BlankId(_))
 	}
 
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Iri(_))
 	}
 
+	/// Returns this identifier as a blank node identifier, if it is one.
 	pub fn as_blank_id(&self) -> Option<&'a BlankId> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -32,6 +39,7 @@ impl<'a> IdRef<'a> {
 		}
 	}
 
+	/// Returns this identifier as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&'a Iri> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -39,6 +47,7 @@ impl<'a> IdRef<'a> {
 		}
 	}
 
+	/// Turns this identifier reference into a copy-on-write identifier.
 	pub fn into_cow(self) -> CowId<'a> {
 		match self {
 			Self::BlankId(b) => CowId::BlankId(Cow::Borrowed(b)),
@@ -48,10 +57,12 @@ impl<'a> IdRef<'a> {
 }
 
 impl IdRef<'_> {
+	/// Clones the referenced identifier.
 	pub fn to_owned(&self) -> Id {
 		(*self).into_owned()
 	}
 
+	/// Clones the referenced identifier.
 	pub fn into_owned(self) -> Id {
 		match self {
 			Self::BlankId(blank_id) => Id::BlankId(blank_id.to_owned()),

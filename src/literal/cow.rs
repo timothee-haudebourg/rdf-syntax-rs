@@ -21,6 +21,7 @@ pub struct CowLiteral<'a> {
 }
 
 impl<'a> CowLiteral<'a> {
+	/// Creates a new copy-on-write literal with the given value and type.
 	pub fn new(value: impl Into<Cow<'a, str>>, type_: impl Into<CowLiteralType<'a>>) -> Self {
 		Self {
 			value: value.into(),
@@ -28,26 +29,33 @@ impl<'a> CowLiteral<'a> {
 		}
 	}
 
+	/// Returns the literal value as a string slice.
 	pub fn as_str(&self) -> &str {
 		&self.value
 	}
 
+	/// Returns the literal value as a byte slice.
 	pub fn as_bytes(&self) -> &[u8] {
 		self.value.as_bytes()
 	}
 
+	/// Checks if this is a language-tagged string (`rdf:langString`).
 	pub fn is_lang_string(&self) -> bool {
 		self.r#type.is_lang_string()
 	}
 
+	/// Returns the language tag of this literal, if it is a language-tagged
+	/// string.
 	pub fn lang_tag(&self) -> Option<&LangTag> {
 		self.r#type.lang_tag()
 	}
 
+	/// Returns a reference to this literal.
 	pub fn as_ref(&self) -> LiteralRef<'_> {
 		LiteralRef::new(&self.value, self.r#type.as_ref())
 	}
 
+	/// Clones the literal, if needed, to get rid of the borrow.
 	pub fn into_owned(self) -> Literal {
 		Literal::new(self.value, self.r#type)
 	}

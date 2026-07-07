@@ -22,6 +22,7 @@ pub struct Literal {
 }
 
 impl Literal {
+	/// Creates a new literal with the given value and type.
 	pub fn new(value: impl Into<String>, type_: impl Into<LiteralType>) -> Self {
 		Self {
 			value: value.into(),
@@ -29,30 +30,38 @@ impl Literal {
 		}
 	}
 
+	/// Returns the literal value as a string slice.
 	pub fn as_str(&self) -> &str {
 		&self.value
 	}
 
+	/// Returns the literal value as a byte slice.
 	pub fn as_bytes(&self) -> &[u8] {
 		self.value.as_bytes()
 	}
 
+	/// Checks if this is a language-tagged string (`rdf:langString`).
 	pub fn is_lang_string(&self) -> bool {
 		self.r#type.is_lang_string()
 	}
 
+	/// Returns the language tag of this literal, if it is a language-tagged
+	/// string.
 	pub fn lang_tag(&self) -> Option<&LangTag> {
 		self.r#type.lang_tag()
 	}
 
+	/// Returns a reference to this literal.
 	pub fn as_ref(&self) -> LiteralRef<'_> {
 		LiteralRef::new(&self.value, self.r#type.as_ref())
 	}
 
+	/// Returns a copy-on-write reference to this literal.
 	pub fn as_cow(&self) -> CowLiteral<'_> {
 		CowLiteral::new(&self.value, self.r#type.as_cow())
 	}
 
+	/// Turns this literal into a copy-on-write literal.
 	pub fn into_cow(self) -> CowLiteral<'static> {
 		CowLiteral::new(self.value, self.r#type.into_cow())
 	}

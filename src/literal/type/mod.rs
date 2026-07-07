@@ -23,14 +23,18 @@ pub enum LiteralType {
 }
 
 impl LiteralType {
+	/// Checks if this is the general `Any` case (as opposed to a language
+	/// string).
 	pub fn is_any(&self) -> bool {
 		matches!(self, Self::Any(_))
 	}
 
+	/// Checks if this is a language-tagged string (`rdf:langString`).
 	pub fn is_lang_string(&self) -> bool {
 		matches!(self, Self::LangString(_))
 	}
 
+	/// Returns the datatype IRI, unless this is a language-tagged string.
 	pub fn as_any(&self) -> Option<&Iri> {
 		match self {
 			Self::Any(iri) => Some(iri),
@@ -38,6 +42,7 @@ impl LiteralType {
 		}
 	}
 
+	/// Returns the language tag, if this is a language-tagged string.
 	pub fn as_lang_string(&self) -> Option<&LangTag> {
 		match self {
 			Self::LangString(tag) => Some(tag),
@@ -45,10 +50,13 @@ impl LiteralType {
 		}
 	}
 
+	/// Returns the language tag, if this is a language-tagged string.
 	pub fn lang_tag(&self) -> Option<&LangTag> {
 		self.as_lang_string()
 	}
 
+	/// Turns this type into the datatype IRI, unless this is a
+	/// language-tagged string.
 	pub fn into_any(self) -> Option<IriBuf> {
 		match self {
 			Self::Any(iri) => Some(iri),
@@ -56,6 +64,8 @@ impl LiteralType {
 		}
 	}
 
+	/// Turns this type into its language tag, if it is a language-tagged
+	/// string.
 	pub fn into_lang_string(self) -> Option<LangTagBuf> {
 		match self {
 			Self::LangString(tag) => Some(tag),
@@ -63,10 +73,12 @@ impl LiteralType {
 		}
 	}
 
+	/// Checks if this is the `xsd:string` datatype.
 	pub fn is_xsd_string(&self) -> bool {
 		self.is_iri(XSD_STRING)
 	}
 
+	/// Checks if this is the given datatype IRI.
 	pub fn is_iri(&self, iri: &Iri) -> bool {
 		match self {
 			Self::Any(i) => i == iri,
@@ -74,6 +86,7 @@ impl LiteralType {
 		}
 	}
 
+	/// Returns a reference to this literal type.
 	pub fn as_ref(&self) -> LiteralTypeRef<'_> {
 		match self {
 			Self::Any(i) => LiteralTypeRef::Any(i),
@@ -81,6 +94,7 @@ impl LiteralType {
 		}
 	}
 
+	/// Returns a copy-on-write reference to this literal type.
 	pub fn as_cow(&self) -> CowLiteralType<'_> {
 		match self {
 			Self::Any(i) => CowLiteralType::Any(Cow::Borrowed(i)),
@@ -88,6 +102,7 @@ impl LiteralType {
 		}
 	}
 
+	/// Turns this literal type into a copy-on-write literal type.
 	pub fn into_cow(self) -> CowLiteralType<'static> {
 		match self {
 			Self::Any(i) => CowLiteralType::Any(Cow::Owned(i)),

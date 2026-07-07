@@ -23,10 +23,13 @@ pub enum CowTerm<'a> {
 }
 
 impl CowTerm<'_> {
+	/// Checks if this term is an identifier, i.e. a blank node identifier or
+	/// an IRI (as opposed to a literal).
 	pub fn is_id(&self) -> bool {
 		matches!(self, Self::BlankId(_) | Self::Ground(CowGroundTerm::Iri(_)))
 	}
 
+	/// Returns this term as an identifier, unless it is a literal.
 	pub fn as_id(&self) -> Option<IdRef<'_>> {
 		match self {
 			Self::BlankId(b) => Some(IdRef::BlankId(b)),
@@ -35,22 +38,28 @@ impl CowTerm<'_> {
 		}
 	}
 
+	/// Checks if this is a blank node identifier.
 	pub fn is_blank_id(&self) -> bool {
 		matches!(self, Self::BlankId(_))
 	}
 
+	/// Checks if this is a ground term (an IRI or a literal, but not a blank
+	/// node identifier).
 	pub fn is_ground(&self) -> bool {
 		matches!(self, Self::Ground(_))
 	}
 
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Ground(CowGroundTerm::Iri(_)))
 	}
 
+	/// Checks if this is a literal.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Ground(CowGroundTerm::Literal(_)))
 	}
 
+	/// Returns this term as a blank node identifier, if it is one.
 	pub fn as_blank_id(&self) -> Option<&BlankId> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -58,6 +67,7 @@ impl CowTerm<'_> {
 		}
 	}
 
+	/// Returns this term as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&Iri> {
 		match self {
 			Self::Ground(g) => g.as_iri(),
@@ -65,6 +75,7 @@ impl CowTerm<'_> {
 		}
 	}
 
+	/// Returns this term as a ground term, if it is one.
 	pub fn as_ground(&self) -> Option<&CowGroundTerm<'_>> {
 		match self {
 			Self::Ground(g) => Some(g),
@@ -72,6 +83,7 @@ impl CowTerm<'_> {
 		}
 	}
 
+	/// Returns this term as a literal, if it is one.
 	pub fn as_literal(&self) -> Option<LiteralRef<'_>> {
 		match self {
 			Self::Ground(g) => g.as_literal(),
@@ -79,6 +91,7 @@ impl CowTerm<'_> {
 		}
 	}
 
+	/// Returns a reference to this term.
 	pub fn as_ref(&self) -> TermRef<'_> {
 		match self {
 			Self::BlankId(b) => TermRef::BlankId(b),
@@ -86,6 +99,7 @@ impl CowTerm<'_> {
 		}
 	}
 
+	/// Clones the term, if needed, to get rid of the borrow.
 	pub fn into_owned(self) -> Term {
 		match self {
 			Self::BlankId(b) => Term::BlankId(b.into_owned()),
@@ -95,6 +109,8 @@ impl CowTerm<'_> {
 }
 
 impl<'a> CowTerm<'a> {
+	/// Turns this term into a ground term, or returns the blank node
+	/// identifier if it isn't one.
 	pub fn into_ground(self) -> Result<CowGroundTerm<'a>, Cow<'a, BlankId>> {
 		match self {
 			Self::Ground(g) => Ok(g),
@@ -102,6 +118,8 @@ impl<'a> CowTerm<'a> {
 		}
 	}
 
+	/// Turns this term into an identifier, or returns the literal value if it
+	/// isn't one.
 	pub fn into_id(self) -> Result<CowId<'a>, CowLiteral<'a>> {
 		match self {
 			Self::BlankId(b) => Ok(CowId::BlankId(b)),

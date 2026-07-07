@@ -10,8 +10,10 @@ pub type RdfQuad = Quad<Id, IriBuf, Term, Id>;
 /// Lexical RDF quad reference.
 pub type RdfQuadRef<'a> = Quad<IdRef<'a>, &'a Iri, TermRef<'a>, IdRef<'a>>;
 
+/// gRDF quad.
 pub type GrdfQuad = Quad<Term>;
 
+/// gRDF quad reference.
 pub type GrdfQuadRef<'a> = Quad<TermRef<'a>>;
 
 impl<S: RdfDisplay, P: RdfDisplay, O: RdfDisplay, G: RdfDisplay> RdfDisplay for Quad<S, P, O, G> {

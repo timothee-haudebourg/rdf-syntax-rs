@@ -20,14 +20,17 @@ pub enum GroundTermRef<'a> {
 }
 
 impl<'a> GroundTermRef<'a> {
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Iri(_))
 	}
 
+	/// Checks if this is a literal.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Literal(_))
 	}
 
+	/// Returns this ground term as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&'a Iri> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -35,6 +38,7 @@ impl<'a> GroundTermRef<'a> {
 		}
 	}
 
+	/// Returns this ground term as a literal, if it is one.
 	pub fn as_literal(&self) -> Option<LiteralRef<'a>> {
 		match self {
 			Self::Literal(l) => Some(*l),
@@ -42,6 +46,7 @@ impl<'a> GroundTermRef<'a> {
 		}
 	}
 
+	/// Turns this ground term reference into a copy-on-write ground term.
 	pub fn into_cow(self) -> CowGroundTerm<'a> {
 		match self {
 			Self::Iri(iri) => CowGroundTerm::Iri(Cow::Borrowed(iri)),
@@ -51,6 +56,7 @@ impl<'a> GroundTermRef<'a> {
 }
 
 impl GroundTermRef<'_> {
+	/// Clones the referenced ground term.
 	pub fn to_owned(&self) -> GroundTerm {
 		(*self).into_owned()
 	}

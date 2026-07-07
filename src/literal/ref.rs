@@ -20,6 +20,7 @@ pub struct LiteralRef<'a> {
 }
 
 impl<'a> LiteralRef<'a> {
+	/// Creates a new literal reference with the given value and type.
 	pub fn new(value: &'a str, type_: impl Into<LiteralTypeRef<'a>>) -> Self {
 		Self {
 			value,
@@ -27,28 +28,35 @@ impl<'a> LiteralRef<'a> {
 		}
 	}
 
+	/// Returns the literal value as a string slice.
 	pub fn as_str(&self) -> &'a str {
 		self.value
 	}
 
+	/// Returns the literal value as a byte slice.
 	pub fn as_bytes(&self) -> &'a [u8] {
 		self.value.as_bytes()
 	}
 
+	/// Checks if this is a language-tagged string (`rdf:langString`).
 	pub fn is_lang_string(&self) -> bool {
 		self.r#type.is_lang_string()
 	}
 
+	/// Returns the language tag of this literal, if it is a language-tagged
+	/// string.
 	pub fn lang_tag(&self) -> Option<&'a LangTag> {
 		self.r#type.lang_tag()
 	}
 
+	/// Turns this literal reference into a copy-on-write literal.
 	pub fn into_cow(self) -> CowLiteral<'a> {
 		CowLiteral::new(self.value, self.r#type)
 	}
 }
 
 impl LiteralRef<'_> {
+	/// Clones the referenced literal.
 	pub fn to_owned(&self) -> Literal {
 		(*self).into_owned()
 	}

@@ -12,19 +12,28 @@ pub use r#ref::*;
 mod cow;
 pub use cow::*;
 
+/// Resource identifier.
+///
+/// Lexical identifier of an RDF resource, either an IRI or a blank node
+/// identifier.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(untagged))]
 pub enum Id {
+	/// Blank node identifier.
 	BlankId(BlankIdBuf),
+
+	/// IRI.
 	Iri(IriBuf),
 }
 
 impl Id {
+	/// Checks if this is a blank node identifier.
 	pub fn is_blank_id(&self) -> bool {
 		matches!(self, Self::BlankId(_))
 	}
 
+	/// Returns this identifier as a blank node identifier, if it is one.
 	pub fn as_blank_id(&self) -> Option<&BlankId> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -32,10 +41,12 @@ impl Id {
 		}
 	}
 
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Iri(_))
 	}
 
+	/// Returns this identifier as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&Iri> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -43,6 +54,7 @@ impl Id {
 		}
 	}
 
+	/// Returns a reference to this identifier.
 	pub fn as_ref(&self) -> IdRef<'_> {
 		match self {
 			Self::BlankId(blank_id) => IdRef::BlankId(blank_id),
@@ -50,6 +62,7 @@ impl Id {
 		}
 	}
 
+	/// Turns this identifier into a blank node identifier, if it is one.
 	pub fn into_blank_id(self) -> Option<BlankIdBuf> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -57,6 +70,7 @@ impl Id {
 		}
 	}
 
+	/// Turns this identifier into an IRI, if it is one.
 	pub fn into_iri(self) -> Option<IriBuf> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -64,6 +78,7 @@ impl Id {
 		}
 	}
 
+	/// Returns a copy-on-write reference to this identifier.
 	pub fn as_cow(&self) -> CowId<'_> {
 		match self {
 			Self::BlankId(blank_id) => CowId::BlankId(Cow::Borrowed(blank_id)),
@@ -71,6 +86,7 @@ impl Id {
 		}
 	}
 
+	/// Turns this identifier into a copy-on-write identifier.
 	pub fn into_cow(self) -> CowId<'static> {
 		match self {
 			Self::BlankId(blank_id) => CowId::BlankId(Cow::Owned(blank_id)),

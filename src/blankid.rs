@@ -34,6 +34,8 @@ macro_rules! blankid {
 pub struct BlankId(str);
 
 impl BlankId {
+	/// Checks that `input` is a valid blank node identifier, in its UTF-8
+	/// byte representation.
 	pub const fn validate_bytes(input: &[u8]) -> bool {
 		let mut i = 0;
 
@@ -67,6 +69,7 @@ impl BlankId {
 		}
 	}
 
+	/// Checks that `input` is a valid blank node identifier.
 	pub const fn validate_str(input: &str) -> bool {
 		Self::validate_bytes(input.as_bytes())
 	}

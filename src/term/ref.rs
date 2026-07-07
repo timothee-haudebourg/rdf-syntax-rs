@@ -20,10 +20,13 @@ pub enum TermRef<'a> {
 }
 
 impl<'a> TermRef<'a> {
+	/// Checks if this term is an identifier, i.e. a blank node identifier or
+	/// an IRI (as opposed to a literal).
 	pub fn is_id(&self) -> bool {
 		matches!(self, Self::BlankId(_) | Self::Ground(GroundTermRef::Iri(_)))
 	}
 
+	/// Returns this term as an identifier, unless it is a literal.
 	pub fn as_id(&self) -> Option<IdRef<'a>> {
 		match self {
 			Self::BlankId(b) => Some(IdRef::BlankId(b)),
@@ -32,6 +35,8 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Turns this term into an identifier, or returns the literal value if it
+	/// isn't one.
 	pub fn into_id(self) -> Result<IdRef<'a>, LiteralRef<'a>> {
 		match self {
 			Self::BlankId(b) => Ok(IdRef::BlankId(b)),
@@ -40,22 +45,28 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Checks if this is a blank node identifier.
 	pub fn is_blank_id(&self) -> bool {
 		matches!(self, Self::BlankId(_))
 	}
 
+	/// Checks if this is a ground term (an IRI or a literal, but not a blank
+	/// node identifier).
 	pub fn is_ground(&self) -> bool {
 		matches!(self, Self::Ground(_))
 	}
 
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Ground(GroundTermRef::Iri(_)))
 	}
 
+	/// Checks if this is a literal.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Ground(GroundTermRef::Literal(_)))
 	}
 
+	/// Returns this term as a blank node identifier, if it is one.
 	pub fn as_blank_id(&self) -> Option<&'a BlankId> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -63,6 +74,7 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Returns this term as a ground term, if it is one.
 	pub fn as_ground(&self) -> Option<GroundTermRef<'a>> {
 		match self {
 			Self::Ground(g) => Some(*g),
@@ -70,6 +82,7 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Returns this term as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&'a Iri> {
 		match self {
 			Self::Ground(g) => g.as_iri(),
@@ -77,6 +90,7 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Returns this term as a literal, if it is one.
 	pub fn as_literal(&self) -> Option<LiteralRef<'a>> {
 		match self {
 			Self::Ground(g) => g.as_literal(),
@@ -84,6 +98,8 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Turns this term into a ground term, or returns the blank node
+	/// identifier if it isn't one.
 	pub fn into_ground(self) -> Result<GroundTermRef<'a>, &'a BlankId> {
 		match self {
 			Self::Ground(g) => Ok(g),
@@ -91,6 +107,7 @@ impl<'a> TermRef<'a> {
 		}
 	}
 
+	/// Turns this term reference into a copy-on-write term.
 	pub fn into_cow(self) -> CowTerm<'a> {
 		match self {
 			Self::BlankId(b) => CowTerm::BlankId(Cow::Borrowed(b)),

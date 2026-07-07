@@ -21,14 +21,18 @@ pub enum CowLiteralType<'a> {
 }
 
 impl CowLiteralType<'_> {
+	/// Checks if this is the general `Any` case (as opposed to a language
+	/// string).
 	pub fn is_any(&self) -> bool {
 		matches!(self, Self::Any(_))
 	}
 
+	/// Checks if this is a language-tagged string (`rdf:langString`).
 	pub fn is_lang_string(&self) -> bool {
 		matches!(self, Self::LangString(_))
 	}
 
+	/// Returns the datatype IRI, unless this is a language-tagged string.
 	pub fn as_any(&self) -> Option<&Iri> {
 		match self {
 			Self::Any(iri) => Some(iri),
@@ -36,6 +40,7 @@ impl CowLiteralType<'_> {
 		}
 	}
 
+	/// Returns the language tag, if this is a language-tagged string.
 	pub fn as_lang_string(&self) -> Option<&LangTag> {
 		match self {
 			Self::LangString(tag) => Some(tag),
@@ -43,14 +48,17 @@ impl CowLiteralType<'_> {
 		}
 	}
 
+	/// Returns the language tag, if this is a language-tagged string.
 	pub fn lang_tag(&self) -> Option<&LangTag> {
 		self.as_lang_string()
 	}
 
+	/// Checks if this is the `xsd:string` datatype.
 	pub fn is_xsd_string(&self) -> bool {
 		self.is_iri(crate::XSD_STRING)
 	}
 
+	/// Checks if this is the given datatype IRI.
 	pub fn is_iri(&self, iri: &Iri) -> bool {
 		match self {
 			Self::Any(i) => i.as_ref() == iri,
@@ -58,6 +66,7 @@ impl CowLiteralType<'_> {
 		}
 	}
 
+	/// Returns a reference to this literal type.
 	pub fn as_ref(&self) -> LiteralTypeRef<'_> {
 		match self {
 			Self::Any(i) => LiteralTypeRef::Any(i),
@@ -65,6 +74,7 @@ impl CowLiteralType<'_> {
 		}
 	}
 
+	/// Clones the literal type, if needed, to get rid of the borrow.
 	pub fn into_owned(self) -> LiteralType {
 		match self {
 			Self::Any(iri) => LiteralType::Any(iri.into_owned()),

@@ -33,14 +33,17 @@ pub enum Term {
 }
 
 impl Term {
+	/// Creates an IRI term.
 	pub fn iri(iri: IriBuf) -> Self {
 		Self::Ground(GroundTerm::Iri(iri))
 	}
 
+	/// Creates a literal term.
 	pub fn literal(literal: Literal) -> Self {
 		Self::Ground(GroundTerm::Literal(literal))
 	}
 
+	/// Creates a term from an identifier (IRI or blank node identifier).
 	pub fn id(id: Id) -> Self {
 		match id {
 			Id::Iri(iri) => Self::iri(iri),
@@ -48,10 +51,13 @@ impl Term {
 		}
 	}
 
+	/// Checks if this term is an identifier, i.e. a blank node identifier or
+	/// an IRI (as opposed to a literal).
 	pub fn is_id(&self) -> bool {
 		matches!(self, Self::BlankId(_) | Self::Ground(GroundTerm::Iri(_)))
 	}
 
+	/// Returns this term as an identifier, unless it is a literal.
 	pub fn as_id(&self) -> Option<IdRef<'_>> {
 		match self {
 			Self::BlankId(b) => Some(IdRef::BlankId(b)),
@@ -60,14 +66,18 @@ impl Term {
 		}
 	}
 
+	/// Checks if this is a blank node identifier.
 	pub fn is_blank_id(&self) -> bool {
 		matches!(self, Self::BlankId(_))
 	}
 
+	/// Checks if this is a ground term (an IRI or a literal, but not a blank
+	/// node identifier).
 	pub fn is_ground(&self) -> bool {
 		matches!(self, Self::Ground(_))
 	}
 
+	/// Returns this term as a blank node identifier, if it is one.
 	pub fn as_blank_id(&self) -> Option<&BlankId> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -75,6 +85,7 @@ impl Term {
 		}
 	}
 
+	/// Returns this term as a ground term, if it is one.
 	pub fn as_ground(&self) -> Option<&GroundTerm> {
 		match self {
 			Self::Ground(g) => Some(g),
@@ -82,6 +93,8 @@ impl Term {
 		}
 	}
 
+	/// Turns this term into a ground term, or returns the blank node
+	/// identifier if it isn't one.
 	pub fn into_ground(self) -> Result<GroundTerm, BlankIdBuf> {
 		match self {
 			Self::Ground(g) => Ok(g),
@@ -89,10 +102,12 @@ impl Term {
 		}
 	}
 
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Ground(GroundTerm::Iri(_)))
 	}
 
+	/// Returns this term as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&Iri> {
 		match self {
 			Self::Ground(t) => t.as_iri(),
@@ -100,6 +115,7 @@ impl Term {
 		}
 	}
 
+	/// Turns this term into an IRI, or returns it unchanged if it isn't one.
 	pub fn into_iri(self) -> Result<IriBuf, Self> {
 		match self {
 			Self::Ground(GroundTerm::Iri(iri)) => Ok(iri),
@@ -107,10 +123,12 @@ impl Term {
 		}
 	}
 
+	/// Checks if this is a literal.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Ground(GroundTerm::Literal(_)))
 	}
 
+	/// Returns this term as a literal, if it is one.
 	pub fn as_literal(&self) -> Option<LiteralRef<'_>> {
 		match self {
 			Self::Ground(t) => t.as_literal(),
@@ -118,6 +136,7 @@ impl Term {
 		}
 	}
 
+	/// Returns a reference to this term.
 	pub fn as_ref(&self) -> TermRef<'_> {
 		match self {
 			Self::BlankId(blank_id) => TermRef::BlankId(blank_id),
@@ -125,6 +144,7 @@ impl Term {
 		}
 	}
 
+	/// Returns a copy-on-write reference to this term.
 	pub fn as_cow(&self) -> CowTerm<'_> {
 		match self {
 			Self::BlankId(blank_id) => CowTerm::BlankId(Cow::Borrowed(blank_id)),
@@ -132,6 +152,7 @@ impl Term {
 		}
 	}
 
+	/// Turns this term into a copy-on-write term.
 	pub fn into_cow(self) -> CowTerm<'static> {
 		match self {
 			Self::BlankId(blank_id) => CowTerm::BlankId(Cow::Owned(blank_id)),
@@ -139,6 +160,8 @@ impl Term {
 		}
 	}
 
+	/// Turns this term into an identifier, or returns the literal value if it
+	/// isn't one.
 	pub fn into_id(self) -> Result<Id, Literal> {
 		match self {
 			Self::BlankId(blank) => Ok(Id::BlankId(blank)),
@@ -229,6 +252,15 @@ impl<'a> PartialOrd<TermRef<'a>> for Term {
 	}
 }
 
+/// Blank node identifiers act as the *variable* side of the [`Pattern`]
+/// ground/variable abstraction, and ground terms act as the *ground* side.
+///
+/// This lets lexical RDF data be used directly with `rdf-types`' pattern
+/// matching and isomorphism-checking facilities (e.g.
+/// [`are_isomorphic`](rdf_types::are_isomorphic) and
+/// [`find_bijection`](rdf_types::find_bijection)), since blank node
+/// identifiers, like pattern variables, are existentially quantified and can
+/// be renamed without changing the meaning of the data.
 impl AsPattern for Term {
 	type Ground = GroundTerm;
 	type Var = BlankId;

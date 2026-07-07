@@ -25,14 +25,17 @@ pub enum GroundTerm {
 }
 
 impl GroundTerm {
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Iri(_))
 	}
 
+	/// Checks if this is a literal.
 	pub fn is_literal(&self) -> bool {
 		matches!(self, Self::Literal(_))
 	}
 
+	/// Returns this ground term as a literal, if it is one.
 	pub fn as_literal(&self) -> Option<LiteralRef<'_>> {
 		match self {
 			Self::Literal(lit) => Some(lit.as_ref()),
@@ -40,6 +43,7 @@ impl GroundTerm {
 		}
 	}
 
+	/// Turns this ground term into a literal, if it is one.
 	pub fn into_literal(self) -> Option<Literal> {
 		match self {
 			Self::Literal(lit) => Some(lit),
@@ -47,6 +51,8 @@ impl GroundTerm {
 		}
 	}
 
+	/// Turns this ground term into a literal, or returns the IRI if it isn't
+	/// one.
 	pub fn try_into_literal(self) -> Result<Literal, IriBuf> {
 		match self {
 			Self::Literal(lit) => Ok(lit),
@@ -54,6 +60,7 @@ impl GroundTerm {
 		}
 	}
 
+	/// Returns this ground term as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&Iri> {
 		match self {
 			Self::Iri(id) => Some(id),
@@ -61,6 +68,8 @@ impl GroundTerm {
 		}
 	}
 
+	/// Turns this ground term into an IRI, or returns it unchanged if it
+	/// isn't one.
 	pub fn try_into_iri(self) -> Result<IriBuf, Self> {
 		match self {
 			Self::Iri(iri) => Ok(iri),
@@ -68,10 +77,12 @@ impl GroundTerm {
 		}
 	}
 
+	/// Turns this ground term into an IRI, if it is one.
 	pub fn into_iri(self) -> Option<IriBuf> {
 		self.try_into_iri().ok()
 	}
 
+	/// Returns a reference to this ground term.
 	pub fn as_ref(&self) -> GroundTermRef<'_> {
 		match self {
 			Self::Iri(id) => GroundTermRef::Iri(id),
@@ -79,6 +90,7 @@ impl GroundTerm {
 		}
 	}
 
+	/// Returns a copy-on-write reference to this ground term.
 	pub fn as_cow(&self) -> CowGroundTerm<'_> {
 		match self {
 			Self::Iri(id) => CowGroundTerm::Iri(Cow::Borrowed(id)),
@@ -86,6 +98,7 @@ impl GroundTerm {
 		}
 	}
 
+	/// Turns this ground term into a copy-on-write ground term.
 	pub fn into_cow(self) -> CowGroundTerm<'static> {
 		match self {
 			Self::Iri(id) => CowGroundTerm::Iri(Cow::Owned(id)),

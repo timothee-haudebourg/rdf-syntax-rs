@@ -15,10 +15,12 @@ use crate::{
 pub struct GenInterpretation<G>(RefCell<G>);
 
 impl<G> GenInterpretation<G> {
+	/// Creates a new interpretation from the given term generator.
 	pub fn new(generator: G) -> Self {
 		Self(RefCell::new(generator))
 	}
 
+	/// Discards the interpretation, returning the inner generator.
 	pub fn into_generator(self) -> G {
 		self.0.into_inner()
 	}

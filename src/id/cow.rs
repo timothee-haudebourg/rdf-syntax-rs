@@ -7,21 +7,28 @@ use iref::{Iri, IriBuf};
 
 use crate::{BlankId, BlankIdBuf, Id, IdRef, RdfDisplay};
 
+/// Copy-on-write resource identifier.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum CowId<'a> {
+	/// Blank node identifier.
 	BlankId(Cow<'a, BlankId>),
+
+	/// IRI.
 	Iri(Cow<'a, Iri>),
 }
 
 impl CowId<'_> {
+	/// Checks if this is a blank node identifier.
 	pub fn is_blank_id(&self) -> bool {
 		matches!(self, Self::BlankId(_))
 	}
 
+	/// Checks if this is an IRI.
 	pub fn is_iri(&self) -> bool {
 		matches!(self, Self::Iri(_))
 	}
 
+	/// Returns this identifier as a blank node identifier, if it is one.
 	pub fn as_blank_id(&self) -> Option<&BlankId> {
 		match self {
 			Self::BlankId(b) => Some(b),
@@ -29,6 +36,7 @@ impl CowId<'_> {
 		}
 	}
 
+	/// Returns this identifier as an IRI, if it is one.
 	pub fn as_iri(&self) -> Option<&Iri> {
 		match self {
 			Self::Iri(iri) => Some(iri),
@@ -36,6 +44,7 @@ impl CowId<'_> {
 		}
 	}
 
+	/// Returns a reference to this identifier.
 	pub fn as_ref(&self) -> IdRef<'_> {
 		match self {
 			Self::BlankId(b) => IdRef::BlankId(b),
@@ -43,6 +52,7 @@ impl CowId<'_> {
 		}
 	}
 
+	/// Clones the identifier, if needed, to get rid of the borrow.
 	pub fn into_owned(self) -> Id {
 		match self {
 			Self::BlankId(b) => Id::BlankId(b.into_owned()),
