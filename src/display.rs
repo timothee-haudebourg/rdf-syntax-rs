@@ -63,8 +63,7 @@ impl RdfDisplay for iref::IriRef {
 		for c in self.as_str().chars() {
 			match c {
 				'\x00'..='\x20' | '<' | '>' | '"' | '{' | '}' | '|' | '^' | '`' | '\\' => {
-					let bytes: u32 = c.into();
-					write!(f, "\\u{bytes:#04x}")
+					write!(f, "\\u{:04X}", c as u32)
 				}
 				_ => fmt::Display::fmt(&c, f),
 			}?;
