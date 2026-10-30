@@ -25,10 +25,23 @@ impl RdfDisplay for str {
 
 		for c in self.chars() {
 			match c {
+				// Characters that MUST be encoded using `ECHAR`.
+				// See: <https://www.w3.org/TR/rdf-canon/#canon-nquads>
+				'\u{8}' => write!(f, "\\b"), // backspace
+				'\t' => write!(f, "\\t"),
+				'\n' => write!(f, "\\n"),
+				'\u{c}' => write!(f, "\\f"), // form feed
+				'\r' => write!(f, "\\r"),
 				'"' => write!(f, "\\\""),
 				'\\' => write!(f, "\\\\"),
-				'\n' => write!(f, "\\n"),
-				'\r' => write!(f, "\\r"),
+				// Characters that MUST be encoded using `UCHAR`, using a
+				// lowercase `\u` followed by 4 uppercase hexadecimal digits.
+				'\u{0}'..='\u{7}'
+				| '\u{b}' // vertical tab
+				| '\u{e}'..='\u{1f}'
+				| '\u{7f}' // delete
+				| '\u{fffe}'
+				| '\u{ffff}' => write!(f, "\\u{:04X}", c as u32),
 				c => c.fmt(f),
 			}?
 		}
